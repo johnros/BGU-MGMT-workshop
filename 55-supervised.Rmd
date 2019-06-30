@@ -1,0 +1,824 @@
+---
+output: html_document
+editor_options: 
+  chunk_output_type: console
+---
+# Supervised Learning {#supervised}
+
+Machine learning is very similar to statistics, but it is certainly not the same.
+As the name suggests, in machine learning we want machines to learn.
+This means that we want to replace hard-coded expert algorithm, with data-driven self-learned algorithm.
+
+There are many learning setups, that depend on what information is available to the machine. 
+The most common setup, discussed in this chapter, is _supervised learning_.
+The name takes from the fact that by giving the machine data samples with known inputs (a.k.a. features) and desired outputs (a.k.a. labels), the human is effectively supervising the learning. 
+If we think of the inputs as predictors, and outcomes as predicted, it is no wonder that supervised learning is very similar to statistical prediction.
+When asked "are these the same?" I like to give the example of internet fraud.
+If you take a sample of fraud "attacks", a statistical formulation of the problem is highly unlikely. 
+This is because fraud events are not randomly drawn from some distribution, but rather, arrive from an adversary learning the defenses and adapting to it. 
+This instance of supervised learning is more similar to game theory than statistics. 
+
+Other types of machine learning problems include [@sammut2011encyclopedia]: 
+
+- __Unsupervised Learning__: 
+Where we merely analyze the inputs/features, but no desirable outcome is available to the learning machine.
+See Chapter \@ref(unsupervised).
+
+- __Semi Supervised Learning__: 
+Where only part of the samples are labeled. 
+A.k.a. _co-training_, _learning from labeled and unlabeled data_, _transductive learning_. 
+
+- __Active Learning__: 
+Where the machine is allowed to query the user for labels. Very similar to _adaptive design of experiments_. 
+
+- __Learning on a Budget__: 
+A version of active learning where querying for labels induces variable costs.
+
+- __Weak Learning__:
+A version of supervised learning where the labels are given not by an expert, but rather by some heuristic rule. 
+Example: mass-labeling cyber attacks by a rule based software, instead of a manual inspection.
+
+- __Reinforcement Learning__:  
+Similar to active learning, in that the machine may query for labels. 
+Different from active learning, in that the machine does not receive labels, but _rewards_. 
+
+- __Structure Learning__: 
+An instance of supervised learning where we predict objects with structure such as dependent vectors, graphs, images, tensors, etc.
+
+- __Online Learning__: 
+An instance of supervised learning, where we need to make predictions where data inputs as a stream. 
+
+- __Transduction__: 
+An instance of supervised learning where we need to make predictions for a new set of predictors, but which are known at the time of learning. 
+Can be thought of as semi-supervised _extrapolation_. 
+
+- __Covariate shift__:
+An instance of supervised learning where we need to make predictions for a set of predictors that ha a different distribution than the data generating source. 
+
+- __Targeted Learning__:
+A form of supervised learning, designed at causal inference for decision making. 
+
+- __Co-training__: 
+An instance of supervised learning where we solve several problems, and exploit some assumed relation between the problems. 
+
+- __Manifold learning__: An instance of unsupervised learning, where the goal is to reduce the dimension of the data by embedding it into a lower dimensional manifold. 
+A.k.a. _support estimation_.
+
+- __Similarity Learning__: Where we try to learn how to measure similarity between objects (like faces, texts, images, etc.).
+
+- __Metric Learning__: Like _similarity learning_, only that the similarity has to obey the definition of a _metric_.
+
+- __Learning to learn__: 
+Deals with the carriage of "experience" from one learning problem to another. 
+A.k.a. _cummulative learning_, _knowledge transfer_, and _meta learning_.
+
+
+
+
+
+## Problem Setup
+
+We now present the _empirical risk minimization_ (ERM) approach to supervised learning, a.k.a. _M-estimation_ in the statistical literature. 
+
+```{remark}
+We do not discuss purely algorithmic approaches such as K-nearest neighbour and _kernel smoothing_ due to space constraints. 
+For a broader review of supervised learning, see the Bibliographic Notes.
+```
+
+```{example, label='rental-prices', name="Rental Prices"}
+Consider the problem of predicting if a mail is spam or not based on its attributes: length, number of exclamation marks, number of recipients, etc.
+```
+
+
+Given $n$ samples with inputs $x$ from some space $\mathcal{X}$ and desired outcome, $y$, from some space $\mathcal{Y}$.
+In our example, $y$ is the spam/no-spam label, and $x$ is a vector of the mail's attributes. 
+Samples, $(x,y)$ have some distribution we denote $P$.
+We want to learn a function that maps inputs to outputs, i.e., that classifies to spam given. This function is called a _hypothesis_, or _predictor_, denoted $f$, that belongs to a hypothesis class $\mathcal{F}$ such that $f:\mathcal{X} \to \mathcal{Y}$.
+We also choose some other function that fines us for erroneous prediction.
+This function is called the _loss_, and we denote it by $l:\mathcal{Y}\times \mathcal{Y} \to \mathbb{R}^+$.
+
+```{remark}
+The _hypothesis_ in machine learning is only vaguely related the _hypothesis_ in statistical testing, which is quite confusing.
+```
+
+```{remark}
+The _hypothesis_ in machine learning is not a bona-fide _statistical model_ since we don't assume it is the data generating process, but rather some function which we choose for its good predictive performance. 
+```
+
+The fundamental task in supervised (statistical) learning is to recover a hypothesis that minimizes the average loss in the sample, and not in the population.
+This is know as the _risk minimization problem_.
+
+```{definition, name="Risk Function"}
+The _risk function_, a.k.a. _generalization error_, or _test error_, is the population average loss of a predictor $f$:
+\begin{align}
+  R(f):=\mathbb{E}_P[l(f(x),y)].
+\end{align}
+```
+
+The best predictor, is the risk minimizer:
+\begin{align}
+  f^* := argmin_f \{R(f)\}.
+  (\#eq:risk)  
+\end{align}
+
+Another fundamental problem is that we do not know the distribution of all possible inputs and outputs, $P$.
+We typically only have a sample of $(x_i,y_i), i=1,\dots,n$.
+We thus state the _empirical_ counterpart of \@ref(eq:risk), which consists of minimizing the average loss.
+This is known as the _empirical risk miminization_ problem (ERM).
+
+```{definition, name="Empirical Risk"}
+The _empirical risk function_, a.k.a. _in-sample error_, or _train error_, is the sample average loss of a predictor $f$:
+\begin{align}
+  R_n(f):= 1/n \sum_i l(f(x_i),y_i).
+\end{align}
+```
+
+A good candidate proxy for $f^*$ is its empirical counterpart, $\hat f$, known as the _empirical risk minimizer_:
+\begin{align}
+  \hat f := argmin_f \{ R_n(f) \}.
+  (\#eq:erm)  
+\end{align}
+
+
+To make things more explicit:
+
+- $f$ may be a linear function of the attributes, so that it may be indexed simply with its coefficient vector $\beta$.
+- $l$ may be a squared error loss: $l(f(x),y):=(f(x)-y)^2$.
+
+Under these conditions, the best predictor $f^* \in \mathcal{F}$ from problem \@ref(eq:risk) is to 
+\begin{align}
+  f^* := argmin_\beta \{ \mathbb{E}_{P(x,y)}[(x'\beta-y)^2] \}.
+\end{align}
+
+When using a linear hypothesis with squared loss, we see that the empirical risk minimization problem collapses to an ordinary least-squares problem:
+\begin{align}
+  \hat f := argmin_\beta \{1/n \sum_i (x_i'\beta - y_i)^2 \}.
+\end{align}
+
+When data samples are assumingly independent, then maximum likelihood estimation is also an instance of ERM, when using the (negative) log likelihood as the loss function.
+
+If we don't assume any structure on the hypothesis, $f$, then $\hat f$ from \@ref(eq:erm) will interpolate the data, and $\hat f$ will be a very bad predictor. 
+We say, it will _overfit_ the observed data, and will have bad performance on new data.
+
+We have several ways to avoid overfitting:
+
+1. Restrict the hypothesis class $\mathcal{F}$ (such as linear functions).
+1. Penalize for the complexity of $f$. The penalty denoted by $\Vert f \Vert$.
+1. Unbiased risk estimation: 
+$R_n(f)$ is not an unbiased estimator of $R(f)$. 
+Why? Think of estimating the mean with the sample minimum...
+Because $R_n(f)$ is downward biased, we may add some correction term, or compute $R_n(f)$ on different data than the one used to recover $\hat f$.
+
+Almost all ERM algorithms consist of some combination of all the three methods above. 
+
+
+### Common Hypothesis Classes
+Some common hypothesis classes, $\mathcal{F}$, with restricted complexity, are:
+
+1. __Linear hypotheses__: such as linear models, GLMs, and (linear) support vector machines (SVM).
+
+1. __Neural networks__: a.k.a. _feed-forward_ neural nets, _artificial_ neural nets, and the celebrated class of _deep_ neural nets.
+
+1. __Tree__: a.k.a. _decision rules_, is a class of hypotheses which can be stated as "if-then" rules. 
+1. __Reproducing Kernel Hilbert Space__: a.k.a. RKHS, is a subset of "the space of all functions^[It is even a subset of the Hilbert space, itself a subset of the space of all functions.]" that is both large enough to capture very complicated relations, but small enough so that it is less prone to overfitting, and also surprisingly simple to compute with. 
+
+
+
+### Common Complexity Penalties
+
+The most common complexity penalty applies to classes that have a finite dimensional parametric representation, such as the class of linear predictors, parametrized via its coefficients $\beta$.
+In such classes we may penalize for the norm of the parameters.
+Common penalties include:
+
+1. __Ridge penalty__: penalizing the $l_2$ norm of the parameter. I.e. $\Vert f \Vert=\Vert \beta \Vert_2^2=\sum_j \beta_j^2$. 
+1. __LASSO penalty__: penalizing the $l_1$ norm of the parameter. I.e., $\Vert f \Vert=\Vert \beta \Vert_1=\sum_j |\beta_j|$
+1. __Elastic net__: a combination of the lasso and ridge penalty. I.e. ,$\Vert f \Vert= \alpha \Vert \beta \Vert_2^2 + (1-\alpha) \Vert \beta \Vert_1$.
+1. __Function Norms__: If the hypothesis class $\mathcal{F}$ does not admit a finite dimensional  representation, the penalty is no longer a function of the parameters of the function. We may, however, penalize not the parametric representation of the function, but rather the function itself $\Vert f \Vert=\sqrt{\int f(t)^2 dt}$. 
+
+
+### Unbiased Risk Estimation
+
+The fundamental problem of overfitting, is that the empirical risk, $R_n(\hat f)$, is downward biased to the population risk, $R(\hat f)$.
+We can remove this bias in two ways: 
+(a) purely algorithmic _resampling_ approaches, and (b) theory driven estimators.
+
+1. __Train-Validate-Test__: 
+The simplest form of algorithmic validation is to split the data. 
+A _train_ set to train/estimate/learn $\hat f$. 
+A _validation_ set to compute the out-of-sample expected loss, $R(\hat f)$, and pick the best performing predictor. 
+A _test_ sample to compute the out-of-sample performance of the selected hypothesis.
+This is a very simple approach, but it is very "data inefficient", thus motivating the next method.
+
+1. __V-Fold Cross Validation__: 
+By far the most popular algorithmic unbiased risk estimator; in _V-fold CV_ we "fold" the data into $V$ non-overlapping sets. 
+For each of the $V$ sets, we learn $\hat f$ with the non-selected fold, and assess $R(\hat f)$) on the selected fold. 
+We then aggregate results over the $V$ folds, typically by averaging. 
+
+1. __AIC__:
+Akaike's information criterion (AIC) is a theory driven correction of the empirical risk, so that it is unbiased to the true risk.
+It is appropriate when using the likelihood loss. 
+
+1. __Cp__: 
+Mallow's Cp is an instance of AIC for likelihood loss under normal noise.
+
+Other theory driven unbiased risk estimators include the _Bayesian Information Criterion_ (BIC, aka SBC, aka SBIC), the _Minimum Description Length_ (MDL), _Vapnic’s Structural Risk Minimization_ (SRM), the _Deviance Information Criterion_ (DIC), and the _Hannan-Quinn Information Criterion_ (HQC).
+
+Other resampling based unbiased risk estimators include resampling __without replacement__ algorithms like _delete-d cross validation_ with its many variations, and __resampling with replacement__, like the _bootstrap_, with its many variations.
+
+
+
+### Collecting the Pieces
+
+An ERM problem with regularization will look like
+\begin{align}
+  \hat f := argmin_{f \in \mathcal{F}} \{ R_n(f)  + \lambda \Vert f \Vert \}.
+  (\#eq:erm-regularized)  
+\end{align}
+
+Collecting ideas from the above sections, a typical supervised learning pipeline will include: choosing the hypothesis class, choosing the penalty function and level, unbiased risk estimator. 
+We emphasize that choosing the penalty function, $\Vert f \Vert$ is not enough, and we need to choose how "hard" to apply it. 
+This if known as the _regularization level_, denoted by $\lambda$ in Eq.\@ref(eq:erm-regularized).
+
+Examples of such combos include:
+
+1. Linear regression, no penalty, train-validate test.
+1. Linear regression, no penalty, AIC.
+1. Linear regression, $l_2$ penalty, V-fold CV. This combo is typically known as _ridge regression_.
+1. Linear regression, $l_1$ penalty, V-fold CV. This combo is typically known as _LASSO regression_.
+1. Linear regression, $l_1$ and $l_2$ penalty, V-fold CV. This combo is typically known as _elastic net regression_.
+1. Logistic regression, $l_2$ penalty, V-fold CV.
+1. SVM classification, $l_2$ penalty, V-fold CV.
+1. Deep network, no penalty, V-fold CV.
+1. Unrestricted, $\Vert \partial^2 f \Vert_2$, V-fold CV. This combo is typically known as a _smoothing spline_.
+
+
+For fans of statistical hypothesis testing we will also emphasize: 
+Testing and prediction are related, but are not the same:
+
+- In the current chapter, we do not claim our models, $f$, are generative. I.e., we do not claim that there is some causal relation between $x$ and $y$. We only claim that $x$ predicts $y$.
+- It is possible that we will want to ignore a significant predictor, and add a non-significant one [@foster2004variable].
+- Some authors will use hypothesis testing as an initial screening for candidate predictors. 
+This is a useful heuristic, but that is all it is-- a heuristic. It may also fail miserably if predictors are linearly dependent (a.k.a. multicollinear).
+
+
+
+
+
+## Supervised Learning in R
+At this point, we have a rich enough language to do supervised learning with R.
+
+In these examples, I will use two data sets from the __ElemStatLearn__ package, that accompanies the seminal book by @friedman2001elements. 
+I use the `spam` data for categorical predictions, and `prostate` for continuous predictions.
+In `spam` we will try to decide if a mail is spam or not. 
+In `prostate` we will try to predict the size of a cancerous tumor.
+You can now call `?prostate` and `?spam` to learn more about these data sets.
+
+Some boring pre-processing. 
+
+```{r preprocessing, cache=TRUE}
+# Preparing prostate data
+data("prostate", package = 'ElemStatLearn')
+prostate <- data.table::data.table(prostate)
+prostate.train <- prostate[train==TRUE, -"train"]
+prostate.test <- prostate[train!=TRUE, -"train"]
+y.train <- prostate.train$lcavol
+X.train <- as.matrix(prostate.train[, -'lcavol'] )
+y.test <- prostate.test$lcavol 
+X.test <- as.matrix(prostate.test[, -'lcavol'] )
+
+# Preparing spam data:
+data("spam", package = 'ElemStatLearn')
+n <- nrow(spam)
+train.prop <- 0.66
+train.ind <- sample(x = c(TRUE,FALSE), 
+                    size = n, 
+                    prob = c(train.prop,1-train.prop), 
+                    replace=TRUE)
+spam.train <- spam[train.ind,]
+spam.test <- spam[!train.ind,]
+
+y.train.spam <- spam.train$spam
+X.train.spam <- as.matrix(spam.train[,names(spam.train)!='spam'] ) 
+y.test.spam <- spam.test$spam
+X.test.spam <-  as.matrix(spam.test[,names(spam.test)!='spam']) 
+
+spam.dummy <- spam
+spam.dummy$spam <- as.numeric(spam$spam=='spam') 
+spam.train.dummy <- spam.dummy[train.ind,]
+spam.test.dummy <- spam.dummy[!train.ind,]
+```
+
+We also define some utility functions that we will require down the road. 
+```{r utility-functions}
+l2 <- function(x) x^2 %>% sum %>% sqrt 
+l1 <- function(x) abs(x) %>% sum  
+MSE <- function(x) x^2 %>% mean 
+missclassification <- function(tab) sum(tab[c(2,3)])/sum(tab)
+```
+
+### Linear Models with Least Squares Loss {#least-squares}
+
+The simplest approach to supervised learning, is simply with OLS: a linear predictor, squared error loss, and train-test risk estimator.
+Notice the better in-sample MSE than the out-of-sample. That is overfitting in action.
+
+```{r OLS Regression, cache=TRUE}
+ols.1 <- lm(lcavol~. ,data = prostate.train)
+# Train error:
+MSE( predict(ols.1)-prostate.train$lcavol) 
+# Test error:
+MSE( predict(ols.1, newdata=prostate.test)- prostate.test$lcavol)
+```
+
+Things to note: 
+
+- I use the `newdata` argument of the `predict` function to make the out-of-sample predictions required to compute the test-error.
+- The test error is larger than the train error. That is overfitting in action.
+
+
+We now implement a V-fold CV, instead of our train-test approach.
+The assignment of each observation to each fold is encoded in `fold.assignment`. 
+The following code is extremely inefficient, but easy to read. 
+
+```{r , cache=TRUE, dependson='preprocessing'}
+folds <- 10
+fold.assignment <- sample(1:folds, nrow(prostate), replace = TRUE)
+errors <- NULL
+
+for (k in 1:folds){
+  prostate.cross.train <- prostate[fold.assignment!=k,] # train subset
+  prostate.cross.test <-  prostate[fold.assignment==k,] # test subset
+  .ols <- lm(lcavol~. ,data = prostate.cross.train) # train
+  .predictions <- predict(.ols, newdata=prostate.cross.test)
+  .errors <-  .predictions-prostate.cross.test$lcavol # save prediction errors in the fold
+  errors <- c(errors, .errors) # aggregate error over folds.
+}
+
+# Cross validated prediction error:
+MSE(errors)
+```
+
+Let's try all possible variable subsets, and choose the best performer with respect to the Cp criterion, which is an unbiased risk estimator.
+This is done with `leaps::regsubsets`.
+We see that the best performer has 3 predictors. 
+
+```{r all subset, cache=TRUE, dependson='preprocessing'}
+regfit.full <- prostate.train %>% 
+  leaps::regsubsets(lcavol~.,data = ., method = 'exhaustive') # best subset selection
+plot(regfit.full, scale = "Cp")
+```
+
+Things to note:
+
+- The plot shows us which is the variable combination which is the best, i.e., has the smallest Cp.
+- Scanning over all variable subsets is impossible when the number of variables is large. 
+
+
+
+Instead of the Cp criterion, we now compute the train and test errors for all the possible predictor subsets^[Example taken from https://lagunita.stanford.edu/c4x/HumanitiesScience/StatLearning/asset/ch6.html].
+In the resulting plot we can see overfitting in action.
+
+```{r all subsets second, results='hold', cache=TRUE, dependson='all subset'}
+model.n <- regfit.full %>% summary %>% length
+X.train.named <- model.matrix(lcavol ~ ., data = prostate.train ) 
+X.test.named <- model.matrix(lcavol ~ ., data = prostate.test ) 
+
+val.errors <- rep(NA, model.n)
+train.errors <- rep(NA, model.n)
+for (i in 1:model.n) {
+    coefi <- coef(regfit.full, id = i) # exctract coefficients of i'th model
+    
+    pred <-  X.train.named[, names(coefi)] %*% coefi # make in-sample predictions
+    train.errors[i] <- MSE(y.train - pred) # train errors
+
+    pred <-  X.test.named[, names(coefi)] %*% coefi # make out-of-sample predictions
+    val.errors[i] <- MSE(y.test - pred) # test errors
+}
+```
+
+Plotting results.
+```{r, cache=TRUE, dependson="all subsets second"}
+plot(train.errors, ylab = "MSE", pch = 19, type = "o")
+points(val.errors, pch = 19, type = "b", col="blue")
+legend("topright", 
+       legend = c("Training", "Validation"), 
+       col = c("black", "blue"), 
+       pch = 19)
+```
+
+
+Checking all possible models is computationally very hard.
+_Forward selection_ is a greedy approach that adds one variable at a time.
+
+```{r, cache=TRUE, dependson=c('preprocessing','OLS regression')}
+ols.0 <- lm(lcavol~1 ,data = prostate.train)
+model.scope <- list(upper=ols.1, lower=ols.0)
+step(ols.0, scope=model.scope, direction='forward', trace = TRUE)
+```
+
+Things to note:
+
+- By default `step` add variables according to the [AIC](https://en.wikipedia.org/wiki/Akaike_information_criterion) criterion, which is a theory-driven unbiased risk estimator.
+- We need to tell `step` which is the smallest and largest models to consider using the `scope` argument. 
+- `direction='forward'` is used to "grow" from a small model. For "shrinking" a large model, use `direction='backward'`, or the default `direction='stepwise'`. 
+
+
+We now learn a linear predictor on the `spam` data using, a least squares loss, and train-test risk estimator. 
+
+```{r, cache=TRUE, dependson='preprocessing'}
+# Train the predictor
+ols.2 <- lm(spam~., data = spam.train.dummy) 
+
+# make in-sample predictions
+.predictions.train <- predict(ols.2) > 0.5 
+# inspect the confusion matrix
+(confusion.train <- table(prediction=.predictions.train, truth=spam.train.dummy$spam)) 
+# compute the train (in sample) misclassification
+missclassification(confusion.train) 
+
+# make out-of-sample prediction
+.predictions.test <- predict(ols.2, newdata = spam.test.dummy) > 0.5 
+# inspect the confusion matrix
+(confusion.test <- table(prediction=.predictions.test, truth=spam.test.dummy$spam))
+# compute the train (in sample) misclassification
+missclassification(confusion.test)
+```
+
+Things to note:
+
+- I can use `lm` for categorical outcomes. `lm` will simply dummy-code the outcome. 
+- A linear predictor trained on 0's and 1's will predict numbers. Think of these numbers as the probability of 1, and my prediction is the most probable class: `predicts()>0.5`.
+- The train error is smaller than the test error. This is overfitting in action.
+
+
+The `glmnet` package is an excellent package that provides ridge, LASSO, and elastic net regularization, for all GLMs, so for linear models in particular.
+
+```{r Ridge-II, cache=TRUE, dependson='preprocessing'}
+suppressMessages(library(glmnet))
+
+means <- apply(X.train, 2, mean)
+sds <- apply(X.train, 2, sd)
+X.train.scaled <- X.train %>% sweep(MARGIN = 2, STATS = means, FUN = `-`) %>% 
+  sweep(MARGIN = 2, STATS = sds, FUN = `/`)
+
+ridge.2 <- glmnet(x=X.train.scaled, y=y.train, family = 'gaussian', alpha = 0)
+
+# Train error:
+MSE( predict(ridge.2, newx =X.train.scaled)- y.train)
+
+# Test error:
+X.test.scaled <- X.test %>% sweep(MARGIN = 2, STATS = means, FUN = `-`) %>% 
+  sweep(MARGIN = 2, STATS = sds, FUN = `/`)
+MSE(predict(ridge.2, newx = X.test.scaled)- y.test)
+```
+
+Things to note:
+
+- The `alpha=0` parameters tells R to do ridge regression. Setting $alpha=1$ will do LASSO, and any other value, with return an elastic net with appropriate weights. 
+- The `family='gaussian'` argument tells R to fit a linear model, with least squares loss.
+- Features for regularized predictors should be z-scored before learning. 
+- We use the `sweep` function to z-score the predictors: we learn the z-scoring from the train set, and apply it to both the train and the test.
+- The test error is __smaller__ than the train error. This may happen because risk estimators are random. Their variance may mask the overfitting.
+
+
+We now use the LASSO penalty.
+```{r, cache=TRUE}
+lasso.1 <- glmnet(x=X.train.scaled, y=y.train, , family='gaussian', alpha = 1)
+
+# Train error:
+MSE( predict(lasso.1, newx =X.train.scaled)- y.train)
+
+# Test error:
+MSE( predict(lasso.1, newx = X.test.scaled)- y.test)
+```
+
+We now use `glmnet` for classification.
+
+```{r, cache=TRUE, dependson='preprocessing'}
+means.spam <- apply(X.train.spam, 2, mean)
+sds.spam <- apply(X.train.spam, 2, sd)
+X.train.spam.scaled <- X.train.spam %>% sweep(MARGIN = 2, STATS = means.spam, FUN = `-`) %>% 
+  sweep(MARGIN = 2, STATS = sds.spam, FUN = `/`) %>% as.matrix
+
+logistic.2 <- cv.glmnet(x=X.train.spam.scaled, y=y.train.spam, family = "binomial", alpha = 0)
+```
+
+Things to note:
+
+- We used `cv.glmnet` to do an automatic search for the optimal level of regularization (the `lambda` argument in `glmnet`) using V-fold CV.
+- Just like the `glm` function,  `'family='binomial'` is used for logistic regression.
+- We z-scored features so that they all have the same scale.
+- We set `alpha=0` for an $l_2$ penalization of the coefficients of the logistic regression.
+
+```{r predict-glmnet}
+# Train confusion matrix:
+.predictions.train <- predict(logistic.2, newx = X.train.spam.scaled, type = 'class') 
+(confusion.train <- table(prediction=.predictions.train, truth=spam.train$spam))
+# Train misclassification error
+missclassification(confusion.train)
+
+# Test confusion matrix:
+X.test.spam.scaled <- X.test.spam %>% sweep(MARGIN = 2, STATS = means.spam, FUN = `-`) %>% 
+  sweep(MARGIN = 2, STATS = sds.spam, FUN = `/`) %>% as.matrix
+
+.predictions.test <- predict(logistic.2, newx = X.test.spam.scaled, type='class') 
+(confusion.test <- table(prediction=.predictions.test, truth=y.test.spam))
+# Test misclassification error:
+missclassification(confusion.test)
+```
+
+### SVM
+
+A support vector machine (SVM) is a linear hypothesis class with a particular loss function known as a [hinge loss](https://en.wikipedia.org/wiki/Hinge_loss).
+We learn an SVM with the `svm` function from the __e1071__ package, which is merely a wrapper for the [libsvm](https://www.csie.ntu.edu.tw/~cjlin/libsvm/) C library; the most popular implementation of SVM today.
+
+```{r svm-classification, cache=TRUE}
+library(e1071)
+svm.1 <- svm(spam~., data = spam.train, kernel='linear')
+
+# Train confusion matrix:
+.predictions.train <- predict(svm.1) 
+(confusion.train <- table(prediction=.predictions.train, truth=spam.train$spam))
+missclassification(confusion.train)
+
+# Test confusion matrix:
+.predictions.test <- predict(svm.1, newdata = spam.test) 
+(confusion.test <- table(prediction=.predictions.test, truth=spam.test$spam))
+missclassification(confusion.test)
+```
+
+We can also use SVM for regression.
+
+```{r svm-regression, cache=TRUE}
+svm.2 <- svm(lcavol~., data = prostate.train, kernel='linear')
+
+# Train error:
+MSE( predict(svm.2)- prostate.train$lcavol)
+# Test error:
+MSE( predict(svm.2, newdata = prostate.test)- prostate.test$lcavol)
+```
+
+Things to note:
+
+- The use of `kernel='linear'` forces the predictor to be linear. Various hypothesis classes may be used by changing the `kernel` argument. 
+
+
+
+### Neural Nets
+
+Neural nets (non deep) can be fitted, for example, with the `nnet` function in the __nnet__ package.
+We start with a nnet regression.
+
+```{r NNET-regression, cache=TRUE}
+library(nnet)
+nnet.1 <- nnet(lcavol~., size=20, data=prostate.train, rang = 0.1, decay = 5e-4, maxit = 1000, trace=FALSE)
+
+# Train error:
+MSE( predict(nnet.1)- prostate.train$lcavol)
+# Test error:
+MSE( predict(nnet.1, newdata = prostate.test)- prostate.test$lcavol)
+```
+
+And nnet classification.
+
+```{r NNET-Classification, cache=TRUE, dependson='preprocessing'}
+nnet.2 <- nnet(spam~., size=5, data=spam.train, rang = 0.1, decay = 5e-4, maxit = 1000, trace=FALSE)
+
+# Train confusion matrix:
+.predictions.train <- predict(nnet.2, type='class') 
+(confusion.train <- table(prediction=.predictions.train, truth=spam.train$spam))
+missclassification(confusion.train)
+
+# Test confusion matrix:
+.predictions.test <- predict(nnet.2, newdata = spam.test, type='class') 
+(confusion.test <- table(prediction=.predictions.test, truth=spam.test$spam))
+missclassification(confusion.test)
+```
+
+#### Deep Neural Nets
+Deep-Neural-Networks are undoubtedly the "hottest" topic in machine-learning and artificial intelligence. 
+This real is too vast to be covered in this text. 
+We merely refer the reader to the [tensorflow](https://cran.r-project.org/package=tensorflow) package documentation as a starting point. 
+
+
+
+
+### Classification and Regression Trees (CART) {#trees}
+
+A CART, is not a linear hypothesis class.
+It partitions the feature space $\mathcal{X}$, thus creating a set of if-then rules for prediction or classification.
+It is thus particularly useful when you believe that the predicted classes may change abruptly with small changes in $x$. 
+
+
+#### The rpart Package {#rpart}
+
+This view clarifies the name of the function `rpart`, which _recursively partitions_ the feature space. 
+
+We start with a regression tree.
+
+```{r Tree-regression, cache=TRUE}
+library(rpart)
+tree.1 <- rpart(lcavol~., data=prostate.train)
+
+# Train error:
+MSE( predict(tree.1)- prostate.train$lcavol)
+# Test error:
+MSE( predict(tree.1, newdata = prostate.test)- prostate.test$lcavol)
+```
+
+We can use the __rpart.plot__ package to visualize and interpret the predictor.
+
+```{r}
+rpart.plot::rpart.plot(tree.1)
+```
+
+Trees are very prone to overfitting.
+To avoid this, we reduce a tree's complexity by _pruning_ it. 
+This is done with the `rpart::prune` function (not demonstrated herein).
+
+
+We now fit a classification tree.
+```{r Tree classification, cache=TRUE}
+tree.2 <- rpart(spam~., data=spam.train)
+
+# Train confusion matrix:
+.predictions.train <- predict(tree.2, type='class') 
+(confusion.train <- table(prediction=.predictions.train, truth=spam.train$spam))
+missclassification(confusion.train)
+
+# Test confusion matrix:
+.predictions.test <- predict(tree.2, newdata = spam.test, type='class') 
+(confusion.test <- table(prediction=.predictions.test, truth=spam.test$spam))
+missclassification(confusion.test)
+```
+
+
+#### The caret Package {#caret}
+
+In the __rpart__ package [\@ref(rpart)] we grow a tree with one function, and then prune it with another.  
+The __caret__ implementation of trees does both with a single function. 
+We demonstrate the package in the context of trees, but it is actually a very convenient wrapper for many learning algorithms; [237(!)](http://topepo.github.io/caret/available-models.html#)
+learning algorithms to be precise.
+
+```{r, warning=FALSE}
+library(caret)
+# Control some training parameters
+train.control <- trainControl(method = "cv",
+                           number = 10)
+
+tree.3 <- train(lcavol~., data=prostate.train, 
+                method='rpart', 
+                trControl=train.control)
+tree.3
+
+# Train error:
+MSE( predict(tree.3)- prostate.train$lcavol)
+# Test error:
+MSE( predict(tree.3, newdata = prostate.test)- prostate.test$lcavol)
+```
+
+
+Things to note:
+
+- A tree was trained because of the `method='rpart'` argument. Many other predictive models are available. See [here](http://topepo.github.io/caret/available-models.html).
+- The pruning of the tree was done automatically by the `caret::train()` function. 
+- The method of pruning is controlled by a control object, generated with the `caret::trainControl()` function. In our case, `method = "cv"` for cross-validation, and `number = 10` for 10-folds. 
+- The train error is larger than the test error. This is possible because the tree is not an ERM on the train data. Rather, it is an ERM on the variations of the data generated by the cross-validation process. 
+
+
+
+### K-nearest neighbour (KNN)
+
+KNN is not an ERM problem.
+In the KNN algorithm, a prediction at some $x$ is made based on the $y$ is it neighbors.
+This means that: 
+
+- KNN is an [Instance Based](https://en.wikipedia.org/wiki/Instance-based_learning) learning algorithm where we do not learn the values of some parametric function, but rather, need the original sample to make predictions. This has many implications when dealing with "BigData".
+- It may only be applied in spaces with known/defined metric. It is thus harder to apply in the presence of missing values, or in "string-spaces", "genome-spaces", etc. where no canonical metric exists. 
+
+KNN is so fundamental that we show how to fit such a hypothesis class, even if it not an ERM algorithm. 
+Is KNN any good? 
+I have never seen a learning problem where KNN beats other methods. Others claim differently.
+
+```{r knn-classification, cache=TRUE}
+library(class)
+knn.1 <- knn(train = X.train.spam.scaled, test = X.test.spam.scaled, cl =y.train.spam, k = 1)
+
+# Test confusion matrix:
+.predictions.test <- knn.1 
+(confusion.test <- table(prediction=.predictions.test, truth=spam.test$spam))
+missclassification(confusion.test)
+```
+
+
+### Linear Discriminant Analysis (LDA)
+
+LDA is equivalent to least squares classification \@ref(least-squares).
+This means that we actually did LDA when we used `lm` for binary classification (feel free to compare the confusion matrices).
+There are, however, some dedicated functions to fit it which we now introduce.
+
+```{r LDA, cache=TRUE}
+library(MASS)
+lda.1 <- lda(spam~., spam.train)
+
+# Train confusion matrix:
+.predictions.train <- predict(lda.1)$class
+(confusion.train <- table(prediction=.predictions.train, truth=spam.train$spam))
+missclassification(confusion.train)
+
+# Test confusion matrix:
+.predictions.test <- predict(lda.1, newdata = spam.test)$class
+(confusion.test <- table(prediction=.predictions.test, truth=spam.test$spam))
+missclassification(confusion.test)
+```
+
+
+
+### Naive Bayes
+
+Naive-Bayes can be thought of LDA, i.e. linear regression, where predictors are assume to be uncorrelated. 
+Predictions may be very good and certainly very fast, even if this assumption is not true. 
+
+
+```{r Naive Bayes, cache=TRUE}
+library(e1071)
+nb.1 <- naiveBayes(spam~., data = spam.train)
+
+# Train confusion matrix:
+.predictions.train <- predict(nb.1, newdata = spam.train)
+(confusion.train <- table(prediction=.predictions.train, truth=spam.train$spam))
+missclassification(confusion.train)
+
+# Test confusion matrix:
+.predictions.test <- predict(nb.1, newdata = spam.test)
+(confusion.test <- table(prediction=.predictions.test, truth=spam.test$spam))
+missclassification(confusion.test)
+```
+
+
+### Random Forrest
+A Random Forrest is one of the most popular supervised learning algorithms.
+It it an extremely successful algorithm, with very few tuning parameters, and easily parallelizable (thus salable to massive datasets).
+
+```{r, warning=FALSE}
+# Control some training parameters
+train.control <- trainControl(method = "cv", number = 10)
+rf.1 <- caret::train(lcavol~., data=prostate.train, 
+                method='rf', 
+                trControl=train.control)
+rf.1
+
+# Train error:
+MSE( predict(rf.1)- prostate.train$lcavol)
+# Test error:
+MSE( predict(rf.1, newdata = prostate.test)- prostate.test$lcavol)
+```
+
+Some of the many many many packages that learn random-forests include: [randomForest](https://cran.r-project.org/package=randomForest),  [ranger](https://cran.r-project.org/package=ranger). 
+
+
+### Boosting
+The fundamental idea behind __Boosting__ is to construct a predictor, as the sum of several "weak" predictors. 
+These weak predictors, are not trained on the same data. 
+Instead, each predictor is trained on the residuals of the previous.
+Think of it this way: 
+The first predictor targets the strongest signal.
+The second targets what the first did not predict.
+Etc.
+At some point, the residuals cannot be predicted anymore, and the learning will stabilize. 
+Boosting is typically, but not necessarily, implemented as a sum of trees (\@(trees)). 
+
+
+
+#### The gbm Package
+TODO
+
+
+#### The xgboost Package
+TODO
+
+
+## Bibliographic Notes
+The ultimate reference on (statistical) machine learning is @friedman2001elements.
+For a softer introduction, see @james2013introduction.
+A statistician will also like @ripley2007pattern.
+For a very algorithmic view, see the seminal @leskovec2014mining or @conway2012machine.
+For a much more theoretical reference, see @mohri2012foundations, @vapnik2013nature, @shalev2014understanding.
+Terminology taken from @sammut2011encyclopedia.
+For an R oriented view see @lantz2013machine. 
+For review of other R sources for machine learning see [Jim Savege's post](http://modernstatisticalworkflow.blogspot.com/2018/01/some-good-introductory-machine-learning.html), or the official [Task View](https://cran.r-project.org/web/views/MachineLearning.html).
+For a review of resampling based unbiased risk estimation (i.e. cross validation) see the exceptional review of @arlot2010survey.
+If you want to know about Deep-Nets in R see [here](https://www.datacamp.com/community/tutorials/keras-r-deep-learning).
+
+## Practice Yourself
+
+1. In \@ref(practice-glm) we fit a GLM for the `MASS::epil` data (Poisson family). We assume that the number of seizures ($y$) depending on the age of the patient (`age`) and the treatment (`trt`). 
+    1. What was the MSE of the model?
+    1. Now, try the same with a ridge penalty using `glmnet` (`alpha=0`). 
+    1. Do the same with a LASSO penalty (`alpha=1`). 
+    1. Compare the test MSE of the three models. Which is the best  ? 
+    
+1. Read about the `Glass` dataset using `data(Glass, package="mlbench")` and `?Glass`. 
+    1. Divide the dataset to train set and test set.
+    1. Apply the various predictors from this chapter, and compare them using the proportion of missclassified. 
+
+See DataCamp's [Supervised Learning in R: Classification](https://www.datacamp.com/courses/supervised-learning-in-r-classification), and [Supervised Learning in R: Regression](https://www.datacamp.com/courses/supervised-learning-in-r-regression) for more self practice.

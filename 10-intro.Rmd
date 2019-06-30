@@ -1,0 +1,70 @@
+---
+output: html_document
+editor_options: 
+  chunk_output_type: console
+---
+
+# Introduction {#intro}
+
+
+
+## What is R? {#what-r}
+
+R was not designed to be a bona-fide programming language. 
+It is an evolution of the S language, developed at Bell labs (later Lucent) as a wrapper for the endless collection of statistical libraries they wrote in Fortran.
+
+As of 2011, half of R's libraries are [actually written in C](https://wrathematics.github.io/2011/08/27/how-much-of-r-is-written-in-r/). 
+
+
+
+## The R Ecosystem {#ecosystem}
+
+A large part of R's success is due to the ease in which a user, or a firm, can augment it. 
+This led to a large community of users, developers, and protagonists. 
+Some of the most important parts of R's ecosystem include:
+
+- [CRAN](https://cran.r-project.org/): 
+a repository for R packages, mirrored worldwide.
+
+- [R-help](https://www.r-project.org/mail.html): 
+an immensely active mailing list. 
+Noways being replaced by StackExchange meta-site. 
+Look for the R tags in the [StackOverflow](http://stackoverflow.com/) and [CrossValidated](http://stats.stackexchange.com/) sites.
+
+- [Task Views](https://cran.r-project.org/web/views/): 
+part of CRAN that collects packages per topic. 
+
+- [Bioconductor](https://www.bioconductor.org/): 
+A CRAN-like repository dedicated to the life sciences. 
+
+- [Neuroconductor](https://www.neuroconductor.org/):
+A CRAN-like repository dedicated to neuroscience, and neuroimaging. 
+
+- [Books](https://www.r-project.org/doc/bib/R-books.html): 
+An insane amount of books written on the language. Some are free, some are not. 
+
+- [The Israeli-R-user-group](https://groups.google.com/forum/#!forum/israel-r-user-group): 
+just like the name suggests.
+
+- Commercial R: being open source and lacking support may seem like a problem that would prohibit R from being adopted for commercial applications. 
+This void is filled by several very successful commercial versions such as [Microsoft R](https://mran.microsoft.com/open/), with its accompanying CRAN equivalent called [MRAN](https://mran.microsoft.com/),  [Tibco's Spotfire](http://spotfire.tibco.com/discover-spotfire/what-does-spotfire-do/predictive-analytics/tibco-enterprise-runtime-for-r-terr), and [others](https://en.wikipedia.org/wiki/R_(programming_language)#Commercial_support_for_R).
+
+- [RStudio](https://www.rstudio.com/products/rstudio/download-server/): since its earliest days R came equipped with a minimal text editor. 
+It later received plugins for major integrated development environments (IDEs) such as Eclipse, WinEdit and even [VisualStudio](https://www.visualstudio.com/vs/rtvs/). 
+None of these, however, had the impact of the RStudio IDE. 
+Written completely in JavaScript, the RStudio IDE allows the seamless integration of cutting edge web-design technologies, remote access, and other killer features, making it today's most popular IDE for R.
+
+- [CheatSheets](https://www.rstudio.com/resources/cheatsheets/) Rstudio curates a list of CheatSheets. Very useful to print some, and have them around when coding.
+
+- [RStartHere](https://github.com/rstudio/RStartHere/blob/master/README.md#import): a curated list of useful packages. 
+
+
+
+## Bibliographic Notes
+For more on the history of R see 
+[AT&T's site](http://www.research.att.com/articles/featured_stories/2013_09/201309_SandR.html?fbid=Yxy4qyQzmMa), 
+John Chamber's talk at [UserR!2014](https://www.youtube.com/watch?v=_hcpuRB5nGs), 
+Nick Thieme's [recent report](https://rss.onlinelibrary.wiley.com/doi/10.1111/j.1740-9713.2018.01169.x) in Significance, or 
+[Revolution Analytics'](https://blog.revolutionanalytics.com/2017/10/updated-history-of-r.html) blog.
+
+You can also consult the Introduction chapter of the MASS book [@venables2013modern].

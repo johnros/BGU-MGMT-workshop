@@ -1,0 +1,1121 @@
+---
+output: html_document
+editor_options: 
+  chunk_output_type: console
+---
+# R Basics {#basics}
+
+We now start with the basics of R. 
+If you have any experience at all with R, you can probably skip this section.
+
+First, make sure you work with the RStudio IDE.
+Some useful pointers for this IDE include:
+
+- Ctrl+Return(Enter) to run lines from editor.
+- Alt+Shift+k for RStudio keyboard shortcuts.
+- Ctrl+r to browse the command history.
+- Alt+Shift+j to navigate between code sections
+- tab for auto-completion
+- Ctrl+1 to skip to editor. 
+- Ctrl+2 to skip to console.
+- Ctrl+8 to skip to the environment list.
+- Ctrl + Alt + Shift + M to select all instances of the selection (for refactoring).
+- Code Folding:
+    - Alt+l collapse chunk.
+    - Alt+Shift+l unfold chunk.
+    - Alt+o collapse all.
+    - Alt+Shift+o unfold all.
+- Alt+"-" for the assignment operator `<-`.
+
+
+### Other IDEs
+Currently, I recommend RStudio, but here are some other IDEs:
+
+1. Jupyter Lab: a very promising IDE, originally designed for Python, that also supports R. 
+At the time of writing, it seems that RStudio is more convenient for R, but it is definitely an IDE to follow closely. 
+See [Max Woolf's](http://minimaxir.com/2017/06/r-notebooks/) review.
+
+1. Eclipse: If you are a Java programmer, you are probably familiar with Eclipse, which does have an R plugin: [StatEt](http://www.walware.de/goto/statet).
+
+1. Emacs: If you are an Emacs fan, you can find an R plugin: [ESS](http://ess.r-project.org/).
+
+1. Vim: [Vim-R](https://github.com/vim-scripts/Vim-R-plugin).
+
+1. Visual Studio also [supports R](https://www.visualstudio.com/vs/features/rtvs/). 
+If you need R for commercial purposes, it may be worthwhile trying Microsoft's R, instead of the usual R. See [here](https://mran.microsoft.com/documents/rro/installation) for installation instructions. 
+
+1. Online version (currently alpha): [R Studio Cloud](https://rstudio.cloud).
+
+
+
+## File types
+
+The file types you need to know when using R are the following:
+
+- __.R__: An ASCII text file containing R scripts only. 
+- __.Rmd__: An ASCII text file. If opened in RStudio can be run as an R-Notebook or compiled using knitr, bookdown, etc. 
+
+
+## Simple calculator
+R can be used as a simple calculator.
+Create a new R Notebook (.Rmd file) within RStudio using File-> New -> R Notebook, and run the following commands. 
+
+```{r}
+10+5 
+70*81
+2**4
+2^4
+log(10)       					
+log(16, 2)    					
+log(1000, 10)   				
+```
+
+
+## Probability calculator 
+R can be used as a probability calculator. 
+You probably wish you knew this when you did your Intro To Probability classes.
+
+The Binomial distribution function:
+```{r}
+dbinom(x=3, size=10, prob=0.5) 	# Compute P(X=3) for X~B(n=10, p=0.5) 
+```
+Notice that arguments do not need to be named explicitly
+```{r}
+dbinom(3, 10, 0.5)
+```
+The Binomial cumulative distribution function (CDF):
+```{r}
+pbinom(q=3, size=10, prob=0.5) # Compute P(X<=3) for X~B(n=10, p=0.5)  	
+```
+The Binomial quantile function:
+```{r}
+qbinom(p=0.1718, size=10, prob=0.5) # For X~B(n=10, p=0.5) returns k such that P(X<=k)=0.1718
+```
+Generate random variables:
+```{r}
+rbinom(n=10, size=10, prob=0.5)
+```
+
+R has many built-in distributions. 
+Their names may change, but the prefixes do not:
+
+- __d__ prefix for the _distribution_ function.
+- __p__ prefix for the _cummulative distribution_ function (CDF).
+- __q__ prefix for the _quantile_ function (i.e., the inverse CDF).
+- __r__ prefix to generate random samples. 
+
+Demonstrating this idea, using the CDF of several popular distributions:
+
+- `pbinom()` for the Binomial CDF.
+- `ppois()` for the Poisson CDF.
+- `pnorm()` for the Gaussian CDF.
+- `pexp()` for the Exponential CDF.
+
+For more information see `?distributions`.
+
+
+
+## Getting Help
+One of the most important parts of working with a language, is to know where to find help. 
+R has several in-line facilities, besides the various help resources in the R [ecosystem](#ecosystem).
+
+
+Get help for a particular function.
+```{r, eval=FALSE}
+?dbinom 
+help(dbinom)
+```
+If you don't know the name of the function you are looking for, search local help files for a particular string:
+```{r, eval=FALSE}
+??binomial
+help.search('dbinom') 
+```
+Or load a menu where you can navigate local help in a web-based fashion:
+```{r, eval=FALSE}
+help.start() 
+```
+
+
+## Variable Asignment
+Assignment of some output into an object named "x":
+```{r}
+x = rbinom(n=10, size=10, prob=0.5) # Works. Bad style.
+x <- rbinom(n=10, size=10, prob=0.5) 
+```
+If you are familiar with other programming languages you may prefer the `=` assignment rather than the `<-` assignment. 
+We recommend you make the effort to change your preferences. 
+This is because thinking with `<-` helps to read your code, distinguishes between assignments and function arguments: think of `function(argument=value)` versus `function(argument<-value)`. 
+It also helps understand special assignment operators such as `<<-` and `->`. 
+
+
+```{remark}
+__Style__:
+We do not discuss style guidelines in this text, but merely remind the reader that good style is extremely important. When you write code, think of other readers, but also think of future self.
+See [Hadley's style guide](http://adv-r.had.co.nz/Style.html) for more. 
+```
+
+To print the contents of an object just type its name
+```{r}
+x
+```
+which is an implicit call to 
+```{r}
+print(x)  
+```
+Alternatively, you can assign and print simultaneously using parenthesis.
+```{r}
+(x <- rbinom(n=10, size=10, prob=0.5))  # Assign and print.
+```
+
+Operate on the object
+```{r}
+mean(x)  # compute mean
+var(x)  # compute variance
+hist(x) # plot histogram
+```
+
+R saves every object you create in RAM^[S and S-Plus used to save objects on disk. Working from RAM has advantages and disadvantages. More on this in Chapter \@ref(memory).]. 
+The collection of all such objects is the __workspace__ which you can inspect with 
+```{r}
+ls()
+```
+or with Ctrl+8 in RStudio. 
+
+If you lost your object, you can use `ls` with a text pattern to search for it
+```{r}
+ls(pattern='x')
+```
+
+
+
+To remove objects from the workspace:
+```{r}
+rm(x) # remove variable
+ls() # verify
+```
+You may think that if an object is removed then its memory is freed. 
+This is almost true, and depends on a negotiation mechanism between R and the operating system. 
+R's memory management is discussed in Chapter \@ref(memory). 
+
+
+## Missing
+Unlike typically programming, when working with real life data, you may have __missing__ values: measurements that were simply not recorded/stored/etc.
+_R_ has rather sophisticated mechanisms to deal with missing values. 
+It distinguishes between the following types:
+
+1. `NA`: Not Available entries. 
+1. `NaN`: Not a number. 
+
+_R_ tries to defend the analyst, and return an error, or `NA` when the presence of missing values invalidates the calculation:
+```{r}
+missing.example <- c(10,11,12,NA)
+mean(missing.example)
+```
+
+Most functions will typically have an inner mechanism to deal with these. In the `mean` function, there is an `na.rm` argument, telling _R_ how to Remove `NA`s.
+```{r}
+mean(missing.example, na.rm = TRUE)
+```
+
+A more general mechanism is removing these manually:
+```{r}
+clean.example <- na.omit(missing.example)
+mean(clean.example)
+```
+
+## Piping 
+Because R originates in Unix and Linux environments, it inherits much of its flavor.
+[Piping](http://ryanstutorials.net/linuxtutorial/piping.php) is an idea taken from the Linux shell which allows to use the output of one expression as the input to another.
+Piping thus makes code easier to read and write. 
+
+```{remark}
+Volleyball fans may be confused with the idea of spiking a ball from the 3-meter line, also called [piping](https://www.youtube.com/watch?v=DEaj4X_JhSY). 
+So:
+(a) These are very different things.
+(b) If you can pipe, [ASA-BGU](http://in.bgu.ac.il/sport/Pages/asa.aspx) is looking for you!
+```
+
+Prerequisites:
+```{r}
+library(magrittr) # load the piping functions
+x <- rbinom(n=1000, size=10, prob=0.5) # generate some toy data
+```
+
+Examples
+```{r, eval=FALSE}
+x %>% var() # Instead of var(x)
+x %>% hist()  # Instead of hist(x)
+x %>% mean() %>% round(2) %>% add(10) 
+```
+
+
+The next example^[Taken from  http://cran.r-project.org/web/packages/magrittr/vignettes/magrittr.html] demonstrates the benefits of piping.
+The next two chunks of code do the same thing.
+Try parsing them in your mind:
+```{r, eval=FALSE}
+# Functional (onion) style
+car_data <- 
+  transform(aggregate(. ~ cyl, 
+                      data = subset(mtcars, hp > 100), 
+                      FUN = function(x) round(mean(x, 2))), 
+            kpl = mpg*0.4251)
+```
+
+```{r, eval=FALSE}
+# Piping (magrittr) style
+car_data <- 
+  mtcars %>%
+  subset(hp > 100) %>%
+  aggregate(. ~ cyl, data = ., FUN = . %>% mean %>% round(2)) %>%
+  transform(kpl = mpg %>% multiply_by(0.4251)) %>%
+  print
+```
+
+Tip: RStudio has a keyboard shortcut for the `%>%` operator. Try Ctrl+Shift+m.
+
+## Vector Creation and Manipulation 
+The most basic building block in R is the __vector__.
+We will now see how to create them, and access their elements (i.e. subsetting).
+Here are three ways to create the same arbitrary vector:
+```{r, eval=FALSE}
+c(10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21) # manually
+10:21 # the `:` operator 							
+seq(from=10, to=21, by=1) # the seq() function
+```
+
+Let's assign it to the object named "x":
+```{r}
+x <- c(10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21) 	
+```
+
+
+Operations usually work element-wise:
+```{r}
+x+2
+x*2    
+x^2    
+sqrt(x)  
+log(x)   
+```
+
+
+## Search Paths and Packages
+R can be easily extended with packages, which are merely a set of documented functions, which can be loaded or unloaded conveniently.
+Let's look at the function `read.csv`. 
+We can see its contents by calling it without arguments:
+```{r}
+read.csv
+```
+Never mind what the function does. 
+Note the `environment: namespace:utils` line at the end. 
+It tells us that this function is part of the __utils__ package.
+We did not need to know this because it is loaded by default.
+Here are some packages that I have currently loaded:
+```{r}
+search()
+```
+Other packages can be loaded via the `library` function, or downloaded from the internet using the `install.packages` function before loading with `library`. 
+R's package import mechanism is quite powerful, and is one of the reasons for R's success. 
+
+
+
+## Simple Plotting 
+R has many plotting facilities as we will further detail in the Plotting Chapter \@ref(plotting).
+We start with the simplest facilities, namely, the `plot` function from the __graphics__ package, which is loaded by default. 
+```{r basic-scatter-plot}
+x<- 1:100
+y<- 3+sin(x) 
+plot(x = x, y = y) # x,y syntax  						
+```
+
+Given an `x` argument and a `y` argument, `plot` tries to present a scatter plot.
+We call this the `x,y` syntax.
+R has another unique syntax to state functional relations.
+We call `y~x` the "tilde" syntax, which originates in works of @wilkinson1973symbolic and was adopted in the early days of S.
+```{r}
+plot(y ~ x, type='l') # y~x syntax 
+```
+
+The syntax `y~x` is read as "y is a function of x".
+We will prefer the `y~x` syntax over the `x,y` syntax since it is easier to read, and will be very useful when we discuss more complicated models. 
+
+
+
+
+Here are some arguments that control the plot's appearance.
+We use `type` to control the plot type, `main` to control the main title.
+```{r}
+plot(y~x, type='l', main='Plotting a connected line') 
+```
+
+We use `xlab` for the x-axis label, `ylab` for the y-axis.
+```{r axis-labels}
+plot(y~x, type='h', main='Sticks plot', xlab='Insert x axis label', ylab='Insert y axis label') 
+```
+
+We use `pch` to control the point type (pch is acronym for Plotting CHaracter). 
+```{r}
+plot(y~x, pch=5) # Point type with pcf
+```
+
+We use `col` to control the color,  `cex` (Character EXpansion) for the point size, and `abline` (y=Bx+A) to add a straight line.
+```{r, results='hold'}
+plot(y~x, pch=10, type='p', col='blue', cex=4) 
+abline(3, 0.002) 
+```
+
+
+For more plotting options run these
+```{r, eval=FALSE}
+example(plot)
+example(points)
+?plot
+help(package='graphics')
+```
+
+When your plotting gets serious, go to Chapter \@ref(plotting).
+
+
+## Object Types
+We already saw that the basic building block of R objects is the vector.
+Vectors can be of the following types:
+
+- __character__ Where each element is a string, i.e., a sequence of alphanumeric symbols.
+- __numeric__ Where each element is a [real number](https://en.wikipedia.org/wiki/Real_number) in [double precision](https://en.wikipedia.org/wiki/Double-precision_floating-point_format) floating point format.
+- __integer__ Where each element is an [integer](https://en.wikipedia.org/wiki/Integer). 
+- __logical__ Where each element is either TRUE, FALSE, or NA^[R uses a [__three__ valued logic](https://en.wikipedia.org/wiki/Three-valued_logic) where a missing value (NA) is neither TRUE, nor FALSE.]
+- __complex__ Where each element is a complex number. 
+- __list__ Where each element is an arbitrary R object.
+- __factor__ Factors are not actually vector objects, but they feel like such. 
+They are used to encode any finite set of values. 
+This will be very useful when fitting linear model because they include information on contrasts, i.e., on the encoding of the factors levels. 
+You should always be alert and recall when you are dealing with a factor or with a character vector. They have different behaviors. 
+
+Vectors can be combined into larger objects. 
+A `matrix` can be thought of as the binding of several vectors of the same type. 
+In reality, a matrix is merely a vector with a dimension attribute, that tells R to read it as a matrix and not a vector.
+
+If vectors of different types (but same length) are binded, we get a `data.frame` which is the most fundamental object in R for data analysis. 
+Data frames are brilliant, but a lot has been learned since their invention.
+They have thus been extended in recent years with the `tbl` class, pronounced [Tibble] (https://cran.r-project.org/web/packages/tibble/vignettes/tibble.html), and the `data.table` class.  
+The latter is discussed in Chapter \@ref(datatable), and is strongly recommended.
+
+
+
+## Data Frames 
+
+Creating a simple data frame:
+```{r}
+x<- 1:10
+y<- 3 + sin(x) 
+frame1 <- data.frame(x=x, sin=y)	
+```
+
+Let's inspect our data frame:
+```{r}
+head(frame1)
+```
+
+Now using the RStudio Excel-like viewer:
+```{r, eval=FALSE}
+View(frame1) 
+```
+
+We highly advise against editing the data this way since there will be no documentation of the changes you made.
+Always transform your data using scripts, so that everything is documented.
+
+Verifying this is a data frame:
+```{r}
+class(frame1) # the object is of type data.frame
+```
+
+Check the dimension of the data
+```{r}
+dim(frame1)  							
+```
+
+Note that checking the dimension of a vector is different than checking the dimension of a data frame.
+```{r}
+length(x)
+```
+
+The length of a `data.frame` is merely the number of columns.
+```{r}
+length(frame1) 
+```
+
+
+## Exctraction
+R provides many ways to subset and extract elements from vectors and other objects. 
+The basics are fairly simple, but not paying attention to the "personality" of each extraction mechanism may cause you a lot of headache. 
+
+For starters, extraction is done with the `[` operator. 
+The operator can take vectors of many types. 
+
+Extracting element with by integer index:
+```{r}
+frame1[1, 2]  # exctract the element in the 1st row and 2nd column.
+```
+
+Extract __column__ by index:
+```{r}
+frame1[,1]      						
+```
+
+Extract column by name:
+```{r}
+frame1[, 'sin']
+```
+
+As a general rule, extraction with `[` will conserve the class of the parent object. 
+There are, however, exceptions.
+Notice the extraction mechanism and the class of the output in the following examples. 
+
+```{r}
+class(frame1[, 'sin'])  # extracts a column vector
+class(frame1['sin'])  # extracts a data frame
+class(frame1[,1:2])  # extracts a data frame
+class(frame1[2])  # extracts a data frame
+class(frame1[2, ])  # extract a data frame
+class(frame1$sin)  # extracts a column vector
+```
+
+The `subset()` function does the same
+```{r, eval=FALSE}
+subset(frame1, select=sin) 
+subset(frame1, select=2)
+subset(frame1, select= c(2,0))
+```
+
+If you want to force the stripping of the class attribute when extracting, try the `[[` mechanism instead of `[`.
+```{r}
+a <- frame1[1] # [ extraction
+b <- frame1[[1]] # [[ extraction
+class(a)==class(b) # objects have differing classes
+a==b # objects are element-wise identical 
+```
+
+The different types of output classes cause different behaviors. Compare the behavior of `[` on seemingly identical objects. 
+```{r}
+frame1[1][1]
+frame1[[1]][1]
+```
+
+If you want to learn more about subsetting see [Hadley's guide](http://adv-r.had.co.nz/Subsetting.html).
+
+
+## Augmentations of the data.frame class
+
+As previously mentioned, the `data.frame` class has been extended in recent years. 
+The best known extensions are the `data.table` and the `tbl`. 
+For beginners, it is important to know R's basics, so we keep focusing on data frames. 
+For more advanced users, I recommend learning the (amazing) `data.table` syntax.
+
+
+
+## Data Import and Export 
+
+For any practical purpose, you will not be generating your data manually. 
+R comes with many importing and exporting mechanisms which we now present.
+If, however, you do a lot of data "munging", make sure to see Hadley-verse Chapter \@ref(hadley).
+If you work with MASSIVE data sets, read the Memory Efficiency Chapter \@ref(memory).
+
+
+### Import from WEB 
+The `read.table` function is the main importing workhorse.
+It can import directly from the web.
+```{r, eval=FALSE}
+URL <- 'http://statweb.stanford.edu/~tibs/ElemStatLearn/datasets/bone.data'
+tirgul1 <- read.table(URL)
+```
+
+```{r, echo=FALSE}
+tirgul1 <- read.table('data/bone.data')
+```
+
+
+Always look at the imported result!
+```{r}
+head(tirgul1)
+```
+
+Oh dear. 
+`read.,table` tried to guess the structure of the input, but failed to recognize the header row. Set it manually with `header=TRUE`:
+```{r, eval=FALSE}
+tirgul1 <- read.table('data/bone.data', header = TRUE) 
+head(tirgul1)
+```
+
+```{r, echo=FALSE}
+tirgul1 <- read.table('data/bone.data', header = TRUE)
+```
+
+
+### Import From Clipboard
+
+TODO:[datapasta](https://github.com/MilesMcBain/datapasta)
+
+
+### Export as CSV 
+Let's write a simple file so that we have something to import
+```{r}
+head(airquality) #  examine the data to export
+temp.file.name <- tempfile() # get some arbitrary file name
+write.csv(x = airquality, file = temp.file.name) # export
+```
+Now let's import the exported file. Being a .csv file, I can use `read.csv` instead of `read.table`. 
+```{r}
+my.data<- read.csv(file=temp.file.name) # import
+head(my.data) # verify import
+```
+
+
+```{remark}
+Windows users may need to use "\\" instead of "/".
+```
+
+### Export non-CSV files
+You can export your R objects in endlessly many ways:
+If instead of the comma delimiter in .csv you want other column delimiters, look into `?write.table`.
+If you are exporting only for R users, you can consider exporting as binary objects with `saveRDS`, `feather::write_feather`, or `fst::write.fst`. 
+See (http://www.fstpackage.org/) for a comparison.
+
+
+### Reading From Text Files 
+
+Some general notes on importing text files via the `read.table` function.
+But first, we need to know what is the active directory.
+Here is how to get and set R's active directory:
+```{r, eval=FALSE}
+getwd() #What is the working directory?
+setwd() #Setting the working directory in Linux
+```
+
+We can now call the `read.table` function to import text files. 
+If you care about your sanity, see `?read.table` before starting imports.
+Some notable properties of the function:
+
+- `read.table` will try to guess column separators (tab, comma, etc.)
+- `read.table` will try to guess if a header row is present.
+- `read.table` will convert character vectors to factors unless told not to using the `stringsAsFactors=FALSE` argument.
+- The output of `read.table` needs to be explicitly assigned to an object for it to be saved. 
+
+
+
+### Writing Data to Text Files
+
+The function `write.table` is the exporting counterpart of `read.table`.
+
+
+### .XLS(X) files 
+Strongly recommended to convert to .csv in Excel, and then import as csv. 
+If you still insist see the __xlsx__ package. 
+
+
+### Massive files 
+
+The above importing and exporting mechanisms were not designed for massive files. 
+See the section on the __data.table__ package (\@ref(datatable)), Sparse Representation (\@ref(sparse)), and Out-of-Ram Algorithms (\@ref(memory)) for more on working with massive data files.  
+
+
+### Databases 
+R does not need to read from text files; it can read directly from a database.
+This is very useful since it allows the filtering, selecting and joining operations to rely on the database's optimized algorithms.
+Then again, if you will only be analyzing your data with R, you are probably better of by working from a file, without the databases' overhead. 
+See Chapter \@ref(memory) for more on this matter.
+
+
+
+
+## Functions
+One of the most basic building blocks of programming is the ability of writing your own functions.
+A function in R, like everything else, is an object accessible using its name.
+We first define a simple function that sums its two arguments
+```{r functionFirst}
+my.sum <- function(x,y) {
+  return(x+y)
+}
+my.sum(10,2)
+```
+
+From this example you may notice that:
+
+- The function `function` tells R to construct a function object.
+
+- Unlike some programming languages, a period (`.`) is allowed as part of an object's name.
+
+- The arguments of the `function`, i.e. `(x,y)`, need to be named but we are not required to specify their class. This makes writing functions very easy, but it is also the source of many bugs, and slowness of R compared to type declaring languages (C, Fortran,Java,...).
+
+- A typical R function does not change objects^[This is a classical _functional programming_ paradigm. If you want an object oriented flavor of R programming, see Hadley's [Advanced R book](http://adv-r.had.co.nz/OO-essentials.html).] but rather creates new ones. 
+To save the output of `my.sum` we will need to assign it using the `<-` operator.
+
+
+Here is a (slightly) more advanced function:
+```{r functionSecond}
+my.sum.2 <- function(x, y , absolute=FALSE) {
+  if(absolute==TRUE) {
+    result <- abs(x+y)
+  }
+  else{
+    result <- x+y
+  } 
+  result
+}
+my.sum.2(-10,2,TRUE)
+```
+
+Things to note:
+
+- `if(condition){expression1} else{expression2}` does just what the name suggests.
+
+- The function will output its last evaluated expression. You don't need to use the `return` function explicitly.
+
+- Using `absolute=FALSE` sets the default value of `absolute` to `FALSE`. This is overridden if `absolute` is stated explicitly in the function call.
+
+
+An important behavior of R is the _scoping rules_. 
+This refers to the way R seeks for variables used in functions. 
+As a rule of thumb, R will first look for variables inside the function and if not found, will search for the variable values in outer environments^[More formally, this is called [Lexical Scoping](https://darrenjw.wordpress.com/2011/11/23/lexical-scope-and-function-closures-in-r/).].
+Think of the next example.
+
+```{r scoping}
+a <- 1
+b <- 2
+x <- 3
+scoping <- function(a,b){
+  a+b+x
+}
+scoping(10,11)
+```
+
+
+
+## Looping 
+The real power of scripting is when repeated operations are done by iteration.
+R supports the usual `for`, `while`, and `repated` loops. 
+Here is an embarrassingly simple example
+```{r looping}
+for (i in 1:5){
+    print(i)
+    }
+```
+
+A slightly more advanced example, is vector multiplication
+```{r, eval=FALSE}
+result <- 0
+n <- 1e3
+x <- 1:n
+y <- (1:n)/n
+for(i in 1:n){
+  result <- result+ x[i]*y[i]
+}
+```
+
+```{remark}
+__Vector Operations__:
+You should NEVER write your own vector and matrix products like in the previous example. Only use existing facilities such as `%*%`, `sum()`, etc.
+```
+
+```{remark}
+__Parallel Operations__:
+If you already know that you will be needing to parallelize your work, get used to working with `foreach` loops in the __foreach__ package, rather then regular `for` loops. 
+```
+
+
+
+## Apply 
+For applying the same function to a set of elements, there is no need to write an explicit loop.
+This is such an elementary operation that every programming language will provide some facility to __apply__, or __map__ the function to all elements of a set.
+R provides several facilities to perform this. 
+The most basic of which is `lapply` which applies a function over all elements of a list, and return a list of outputs:
+```{r lapply}
+the.list <- list(1,'a',mean) # a list of 3 elements from different classes
+lapply(X = the.list, FUN = class) # apply the function `class` to each elements
+sapply(X = the.list, FUN = class) # lapply with cleaned output
+```
+
+What is the function you are using requires some arguments?
+One useful trick is to create your own function that takes only one argument:
+
+```{r lapply-wrapper}
+quantile.25 <- function(x) quantile(x,0.25)
+sapply(USArrests, quantile.25)
+```
+
+What if you are applying the same function with __two__ lists of arguments? Use __mapply__.
+The following will compute a different quantile to each column in the data:
+```{r mapply}
+quantiles <- c(0.1, 0.5, 0.3, 0.2)
+mapply(quantile, USArrests, quantiles)
+```
+
+
+R provides many variations on `lapply` to facilitate programming. 
+Here is a partial list:
+
+- `sapply`: The same as `lapply` but tries to arrange output in a vector or matrix, and not an unstructured list.
+- `vapply`: A safer version of `sapply`, where the output class is pre-specified.
+- `apply`: For applying over the rows or columns of matrices.
+- `mapply`: For applying functions with more than a single input. 
+- `tapply`: For splitting vectors and applying functions on subsets. 
+- `rapply`: A recursive version of `lapply`.
+- `eapply`: Like `lapply`, only operates on `environments` instead of lists. 
+- `Map`+`Reduce`: For a [Common Lisp](https://en.wikipedia.org/wiki/Common_Lisp) look and feel of `lapply`.
+- `parallel::parLapply`: A parallel version of `lapply` from the package __parallel__.
+- `parallel::parLBapply`: A parallel version of `lapply`, with load balancing from the package __parallel__.
+
+
+
+## Recursion 
+The R compiler is really not designed for recursion, and you will rarely need to do so.  
+See the RCpp Chapter \@ref(rcpp) for linking C code, which is better suited for recursion. 
+If you really insist to write recursions in R, make sure to use the `Recall` function, which, as the name suggests, recalls the function in which it is place. 
+Here is a demonstration with the Fibonacci series. 
+```{r recusrion, cache=TRUE}
+fib<-function(n) {
+    if (n <= 2) fn<-1 
+    else fn <- Recall(n - 1) + Recall(n - 2) 
+    return(fn)
+} 
+fib(5)
+```
+
+
+## Strings
+
+Note: this section is courtesy of Ron Sarafian.
+
+Strings may appear as character vectors,files names, paths (directories), graphing elements, and more.
+
+Strings can be concatenated with the super useful `paste` function.
+
+```{r}
+a <- "good"
+b <- "morning"
+is.character(a)
+paste(a,b)
+(c <- paste(a,b, sep = "."))
+paste(a,b,1:3, paste='@@@', collapse = '^^^^')
+```
+
+Things to note:
+
+- `sep` is used to separate strings.
+- `collapse` is used to separate results. 
+
+The `substr` function extract or replace substrings in a character vector:
+
+```{r}
+substr(c, start=2, stop=4)
+substr(c, start=6, stop=12) <- "evening"
+```
+
+The `grep` function is a very powerful tool to search for patterns in text. 
+These patterns are called [regular expressions](https://en.wikipedia.org/wiki/Regular_expression)
+
+```{r}
+(d <- c(a,b,c))
+grep(pattern = "good",x = d) 
+grep("good",d, value=TRUE, ignore.case=TRUE) 
+grep("([a-zA-Z]+)\\1",d, value=TRUE, perl=TRUE) 
+```
+
+Things to note:
+
+- Use `value=TRUE` to return the string itself, instead of its index.
+- `([a-zA-Z]+)\\1` is a regular expression to find repeating characters. `perl=TRUE` to activate the [Perl](https://en.wikipedia.org/wiki/Perl) "flavored" regular expressions.
+
+Use `gsub` to replace characters in a string object:
+```{r}
+gsub("o", "q", d) # replace the letter "o" with "q".
+gsub("([a-zA-Z]+)\\1", "q", d, perl=TRUE) # replace repeating characters with "q".
+```
+
+The `strsplit` allows to split string vectors to list:
+```{r}
+(x <- c(a = "thiszis", b = "justzan", c = "example"))
+strsplit(x, "z") # split x on the letter z
+```
+
+
+Some more examples:
+```{r}
+nchar(x) #  count the nuber of characters in every element of a string vector.
+
+toupper(x) # translate characters in character vectors to upper case
+tolower(toupper(x)) # vice verca
+
+letters[1:10] # lower case letters vector
+LETTERS[1:10] # upper case letters vector
+
+cat("the sum of", 1, "and", 2, "is", 1+2) #  concatenate and print strings and values
+```
+
+If you need more than this, look for the [stringr](https://r4ds.had.co.nz/strings.html) package that provides a set of internally consistent tools.
+
+
+
+## Dates and Times
+
+Note: This Section is courtesy of [Ron Sarafian](https://www.linkedin.com/in/ron-sarafian-4a5a95110/).
+
+### Dates
+
+R provides several packages for dealing with date and date/time data. 
+We start with the `base` package. 
+
+R needs to be informed explicitly that an object holds dates. 
+The `as.Date` function convert values to dates. 
+You can pass it a `character`, a `numeric`, or a `POSIXct` (we'll soon explain what it is).
+
+```{r}
+start <- "1948-05-14"
+class(start)
+start <- as.Date(start)
+class(start)
+```
+
+But what if our date is not in the yyyy-mm-dd format? 
+We can tell R what is the character date's format.
+
+```{r}
+as.Date("14/5/1948", format="%d/%m/%Y")
+as.Date("14may1948", format="%d%b%Y")
+```
+
+Things to note:
+
+- The format of the date is specified with the `format=` argument. 
+`%d` for day of the month, `/` for separation, `%m` for month, and `%Y` for year in four digits. See `?strptime` for more available formatting.
+- If it returns NA, then use the command `Sys.setlocale("LC_TIME","C")`
+
+Many functions are content aware, and adapt their behavior when dealing with dates:
+```{r}
+(today <- Sys.Date()) # the current date
+
+today + 1 # Add one day
+today - start # Diffenrece between dates
+min(start,today)
+```
+
+### Times
+Specifying times is similar to dates, only that more formatting parameters are required. 
+The `POSIXct` is the object class for times.
+It expects strings to be in the format YYYY-MM-DD HH:MM:SS. 
+With `POSIXct` you can also specify the timezone, e.g., `"Asia/Jerusalem"`. 
+```{r}
+time1 <- Sys.time()
+class(time1)
+time2 <- time1 + 72*60*60 # add 72 hours
+time2-time1
+class(time2-time1)
+```
+
+Things to note:
+
+- Be careful about DST, because `as.POSIXct("2019-03-29 01:30")+3600` will not add 1 hour, but 2 with the result: `[1] "2019-03-29 03:30:00 IDT"`
+
+Compute differences in your unit of choice:
+```{r}
+difftime(time2,time1, units =  "hour")
+difftime(time2,time1, units =  "week")
+```
+
+Generate sequences:
+```{r}
+seq(from = time1, to = time2, by = "day") 
+seq(time1, by = "month", length.out = 12)
+```
+
+### lubridate Package
+
+The __lubridate__ package replaces many of the __base__ package functionality, with a more consistent interface. 
+You only need to specify the order of arguments, not their format:
+
+```{r}
+library(lubridate)
+ymd("2017/01/31")
+mdy("January 31st, 2017")
+dmy("31-Jan-2017")
+ymd_hms("2000-01-01 00:00:01")
+ymd_hms("20000101000001")
+```
+
+Another nice thing in __lubridate__, is that periods can be created with a number of friendly constructor functions that you can combine time objects. E.g.: 
+
+```{r}
+seconds(1)
+minutes(c(2,3))
+hours(4)
+days(5)
+months(c(6,7,8))
+weeks(9)
+years(10)
+
+(t <- ymd_hms("20000101000001"))
+t + seconds(1)
+t + minutes(c(2,3)) + years(10)
+```
+
+And you can also extract and assign the time components:
+
+```{r}
+t
+second(t)
+second(t) <- 26
+t
+```
+
+Analyzing temporal data is different than actually storing it. 
+If you are interested in time-series analysis, try the __tseries__, __forecast__ and __zoo__ packages.
+
+
+
+
+## Complex Objects
+Say you have a list with many elements, and you want to inspect this list.
+You can do it using the _Environment_ pane in RStudio (Ctrl+8), or using the __str__ function:
+
+```{r str}
+complex.object <- list(7, 'hello', list(a=7,b=8,c=9), FOO=read.csv)
+str(complex.object)
+```
+
+Some (very) advanced users may want a deeper look into object.
+Try the [lobstr](https://github.com/r-lib/lobstr/blob/master/README.md) package, or the __.Internal(inspect(...))__ function described [here](https://www.brodieg.com/2019/02/18/an-unofficial-reference-for-internal-inspect/).
+
+```{r}
+x <- c(7,10)
+.Internal(inspect(x))
+```
+
+
+
+## Vectors and Matrix Products
+This section is courtesy of Ron Sarafian. 
+
+If you are operating with numeric vectors, or matrices, you may want to compute products. 
+You can easily write your own R loops, but it is much more efficient to use the built-in operations. 
+
+```{definition, label="matrix-product", name="Matrix Product"}
+The matrix-product between matrix $n \times m$ matrix $A$, and 
+$m \times p$ matrix $B$, is a $n \times p$ matrix $C$, where:
+$$c_{i,j}:=\sum_{k=1}^m a_{i,k} b_{k,j}$$
+```
+
+Vectors can be seen as single row/column matrices. 
+We can thus use matrix products to define the following:
+
+```{definition, label="dot-product", name="Dot Product"}
+The dot-product, a.k.a. scalar-product, or inner-product, between row-vectors $x:=(x_1,\dots,x_n)$ and $y:=(y_1,\dots,y_n)$ is defined as the matrix product between the $1 \times n$ matrix $x'$, and the $n \times 1$ matrix y:
+$$x'y:= \sum_i x_i y_i$$
+```
+
+```{definition, label="outer-product", name="Outer Product"}
+The outer product between row-vectors $x:=(x_1,\dots,x_n)$ and $y:=(y_1,\dots,y_n)$ is defined as the matrix product between the $n \times 1$ matrix $x$, and the $1 \times n$ matrix $y'$:
+$$(xy')_{i,j}:=x_i \, y_j$$
+```
+
+
+Matrix products are computed with the `%*%` operator:
+```{r}
+x <- rnorm(4) 
+y <- exp(-x) 
+t(x) %*% y # Dot product.
+x %*% y # Dot product.
+crossprod(x,y) # Dot product.
+crossprod(t(x),y) # Outer product.
+crossprod(t(x),t(y)) # Outer product.
+x %*% t(y) # Outer product
+x %o% y # Outer product
+outer(x,y) # Outer product
+```
+
+Things to note:
+
+- The definition of the matrix product has to do with the view of a matrix as a linear operator, and not only a table with numbers. Pick up any linear algebra book to understand why it is defined this way. 
+- Vectors are matrices. The dot product, is a matrix product where $m=1$.
+- `*` is an element-wise product, whereas `%*%` is a dot product.
+- While not specifying whether the vectors are horizontal or vertical, R treats the operation as $(1 \times n) * (n \times 1)$. 
+- `t()` is the vector/ matrix transpose.
+
+Now for matrix multiplication:
+```{r}
+(x <- rep(1,5))
+(A <- matrix(data = rep(1:5,5), nrow = 5, ncol = 5, byrow = TRUE)) # 
+
+x %*% A # (1X5) * (5X5) => (1X5)
+A %*% x # (5X5) * (5X1) => (1X5)
+0.5 * A 
+A %*% t(A) # Gram matrix
+t(x) %*% A %*% x # Quadratic form
+```
+
+Can I write these functions myself? Yes!
+But a pure-R implementation will be much slower than `%*%`:
+```{r product-benchmark}
+my.crossprod <- function(x,y){
+  result <- 0
+  for(i in 1:length(x)) result <- result + x[i]*y[i]
+  result
+}
+x <- rnorm(1e8)
+y <- rnorm(1e8)
+system.time(a1 <- my.crossprod(x,y))
+system.time(a2 <- sum(x*y))
+system.time(a3 <- c(x%*%y))
+all.equal(a1,a2)
+all.equal(a1,a3)
+all.equal(a2,a3)
+```
+
+
+## Bibliographic Notes
+
+There are endlessly many introductory texts on R.
+For a list of free resources see [CrossValidated](http://stats.stackexchange.com/questions/138/free-resources-for-learning-r).
+I personally recommend the official introduction @venables2004introduction, [available online](https://cran.r-project.org/doc/manuals/r-release/R-intro.pdf), or anything else Bill Venables writes. 
+
+For Importing and Exporting see  (https://cran.r-project.org/doc/manuals/r-release/R-data.html).
+For working with databases see (https://rforanalytics.wordpress.com/useful-links-for-r/odbc-databases-for-r/).
+For a little intro on time-series objects in R see [Cristoph Sax's blog](http://www.christophsax.com/2018/05/15/tsbox/).
+For working with strings see [Gaston Sanchez's book](http://www.gastonsanchez.com/r4strings/). 
+For advanced R programming see @wickham2014advanced, [available online](http://adv-r.had.co.nz/),  or anything else Hadley Wickham writes. For a curated list of recommended packages see [here](https://github.com/rstudio/RStartHere/blob/master/README.md).
+
+
+
+
+## Practice Yourself
+
+1. Load the package __MASS__. That was easy. Now load __ggplot2__, after looking into `install.pacakges()`.
+
+1. Save the numbers 1 to 1,000,000 (`1e6`)  into an object named `object`.
+
+1. Write a function that computes the mean of its input. 
+Write a version that uses `sum()`, and another that uses a `for` loop and the summation `+`. 
+Try checking which is faster using `system.time`. 
+Is the difference considerable? Ask me about it in class. 
+
+1. Write a function that returns `TRUE` if a number is divisible by 13, `FALSE` if not, and a nice warning to the user if the input is not an integer number. 
+
+1. Apply the previous function to all the numbers in `object`. Try using a `for` loop, but also a mapping/apply function.
+
+1. Make a matrix of random numbers using `A <- matrix(rnorm(40), ncol=10, nrow=4)`. 
+Compute the mean of each column. 
+Do it using your own loop and then do the same with `lapply` or `apply`.
+
+1. Make a data frame (`dataA`) with three columns, and 100 rows.
+The first column with 100 numbers generated from the $\mathcal{N}(10,1)$ distribution, second column with samples from $Poiss(\lambda=4)$. 
+The third column contains only `1`.  
+Make another data frame (`dataB`) with three columns and 100 rows. 
+Now with $\mathcal{N}(10,0.5^2)$, $Poiss(\lambda=4)$ and `2`. 
+Combine the two data frames into an object named `dataAB` with `rbind`.
+Make a scatter plot of `dataAB` where the x-axes is the first column, the y-axes is the second and define the shape of the points to be the third column.
+
+1. In a sample generated of 1,000 observations from the $\mathcal{N}(10,1)$ distribution: 
+    1. What is the proportion of samples smaller than $12.4$ ?
+    1. What is the $0.23$ percentile of the sample?
+
+1. Nothing like cleaning a dataset, to practice your R basics. Have a look at [RACHAEL TATMAN](https://makingnoiseandhearingthings.com/2018/04/19/datasets-for-data-cleaning-practice/) collected several datasets which BADLY need some cleansing. 
+
+You can also self practice with DataCamp's [Intoroduction to R](https://www.datacamp.com/courses/free-introduction-to-r) course, or go directly to exercising with [R-exercises](https://www.r-exercises.com/start-here-to-learn-r/).

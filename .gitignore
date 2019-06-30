@@ -1,3 +1,9 @@
+packrat
+airline*
+_bookdown_files
+data/2010_BSA_Carrier_PUF.csv
+
+
 # History files
 .Rhistory
 .Rapp.history

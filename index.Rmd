@@ -1,0 +1,41 @@
+--- 
+title: "R (BGU course)"
+author: "Jonathan D. Rosenblatt"
+date: '`r Sys.Date()`'
+bibliography: bib.bib
+description: Class notes for the R course at the BGU MGMT faculty.
+documentclass: book
+keywords: "Rstats, Statistics"
+link-citations: yes
+biblio-style: apalike
+always_allow_html: yes
+---
+
+```{r knitr defaults, echo=FALSE}
+knitr::opts_chunk$set(out.width='50%')
+knitr::opts_chunk$set(cache = TRUE)
+set.seed(1)
+```
+
+
+
+
+
+
+## Notation Conventions
+
+In this text we use the following conventions:
+Lower case $x$ may be a vector or a scalar, random of fixed, as implied by the context. 
+Upper case $A$ will stand for matrices. 
+Equality $=$ is an equality, and $:=$ is a definition.
+Norm functions are denoted with $\Vert x \Vert$ for vector norms, and $\Vert A \Vert$ for matrix norms. 
+The type of norm is indicated in the subscript; e.g. $\Vert x \Vert_2$ for the Euclidean ($l_2$) norm.
+Tag, $x'$ is a transpose. 
+The distribution of a random vector is $\sim$.
+
+
+
+## Acknowledgements
+
+I have consulted many people during the writing of this text.
+I would like to thank [Yoav Kessler](https://kesslerlab.wordpress.com/), [Lena Novack](http://fohs.bgu.ac.il/research/profileBrief.aspx?id=VeeMVried), Efrat Vilenski, Ron Sarafian, and Liad Shekel in particular, for their valuable inputs. 

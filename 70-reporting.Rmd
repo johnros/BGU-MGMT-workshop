@@ -1,0 +1,508 @@
+---
+output: html_document
+editor_options: 
+  chunk_output_type: console
+---
+# Reports {#report}
+
+```{r verbatim text, cache=FALSE, echo=FALSE}
+knitr::opts_chunk$set(tidy = F)
+
+knitr::knit_hooks$set(source = function(x, options){
+  if (!is.null(options$verbatim) && options$verbatim){
+    opts = gsub(",\\s*verbatim\\s*=\\s*TRUE\\s*", "", options$params.src)
+    bef = sprintf('\n\n    ```{r %s}\n', opts, "\n")
+    stringr::str_c(
+      bef, 
+      knitr:::indent_block(paste(x, collapse = '\n'), "    "), 
+      "\n    ```\n"
+    )
+  } else {
+    stringr::str_c("\n\n```", tolower(options$engine), "\n", 
+      paste(x, collapse = '\n'), "\n```\n\n"
+    )
+  }
+})
+```
+
+
+If you have ever written a report, you are probably familiar with the process of preparing your figures in some software, say R, and then copy-pasting into your text editor, say MS Word. 
+While very popular, this process is both tedious, and plain painful if your data has changed and you need to update the report. 
+Wouldn't it be nice if you could produce figures and numbers from within the text of the report, and everything else would be automated?
+It turns out it is possible. 
+There are actually several systems in R that allow this. 
+We start with a brief review.
+
+1. __Sweave__:
+_LaTeX_ is a markup language that compiles to _Tex_ programs that compile, in turn, to documents (typically PS or PDFs).
+If you never heard of it, it may be because you were born the the MS Windows+MS Word era. 
+You should know, however, that _LaTeX_ was there much earlier, when computers were mainframes with text-only graphic devices. 
+You should also know that _LaTeX_ is still very popular (in some communities) due to its very rich markup syntax, and beautiful output. 
+_Sweave_ [@leisch2002sweave] is a compiler for _LaTeX_ that allows you do insert R commands in the _LaTeX_ source file, and get the result as part of the outputted PDF. 
+It's name suggests just that: it allows to weave S^[Recall, S was the original software from which R evolved.] output into the document, thus, Sweave. 
+
+1. __knitr__:
+_Markdown_ is a text editing syntax that, unlike _LaTeX_, is aimed to be human-readable, but also compilable by a machine. 
+If you ever tried to read HTML or _LaTeX_ source files, you may understand why human-readability is a desirable property.
+There are many _markdown_ compilers. One of the most popular is Pandoc, written by the Berkeley philosopher(!) Jon MacFarlane. 
+The availability of Pandoc gave [Yihui Xie](https://yihui.name/), a name to remember, the idea that it is time for Sweave to evolve. 
+Yihui thus wrote __knitr__ [@xie2015dynamic], which allows to write human readable text in _Rmarkdown_, a superset of _markdown_, compile it with R and the compile it with Pandoc. 
+Because Pandoc can compile to PDF, but also to HTML, and DOCX, among others, this means that you can write in Rmarkdown, and get output in almost all text formats out there. 
+
+1. __bookdown__:
+__Bookdown__ [@xie2016bookdown] is an evolution of __knitr__, also written by Yihui Xie, now working for RStudio. 
+The text you are now reading was actually written in __bookdown__.
+It deals with the particular needs of writing large documents, and cross referencing in particular (which is very challenging if you want the text to be human readable).
+
+1. __Shiny__:
+Shiny is essentially a framework for quick web-development. 
+It includes (i) an abstraction layer that specifies the layout of a web-site which is our report, (ii) the command to start a web server to deliver the site.
+For more on Shiny see @shiny.
+
+
+
+
+
+
+## knitr
+
+### Installation
+To run __knitr__ you will need to install the package.
+```{r, eval=FALSE}
+install.packages('knitr')
+```
+
+It is also recommended that you use it within RStudio (version>0.96), where you can easily create a new `.Rmd` file. 
+
+### Pandoc Markdown
+
+Because __knitr__ builds upon _Pandoc markdown_, here is a simple example of markdown text, to be used in a `.Rmd` file, which can be created using the _File-> New File -> R Markdown_ menu of RStudio.
+
+
+Underscores or asterisks for `_italics1_` and `*italics2*` return _italics1_ and *italics2*.
+Double underscores or asterisks for `__bold1__` and `**bold2**` return __bold1__ and **bold2**.
+Subscripts are enclosed in tildes, `like~this~` (like~this~), and superscripts are enclosed in carets `like^this^` (like^this^).
+
+For links use `[text](link)`, like `[my site](www.john-ros.com)`.
+An image is the same as a link, starting with an exclamation, like this `![image caption](image path)`.
+
+An itemized list simply starts with hyphens preceeded by a blank line (don't forget that!):
+```
+
+- bullet
+- bullet
+    - second level bullet
+    - second level bullet
+```
+Compiles into:
+
+- bullet
+- bullet
+    - second level bullet
+    - second level bullet
+
+An enumerated list starts with an arbitrary number:
+```
+1. number
+1. number
+    1. second level number
+    1. second level number
+```
+Compiles into:
+
+1. number
+1. number
+    1. second level number
+    1. second level number
+
+
+For more on markdown see https://bookdown.org/yihui/bookdown/markdown-syntax.html.
+
+
+
+
+### Rmarkdown
+_Rmarkdown_, is an extension of _markdown_ due to RStudio, that allows to incorporate R expressions in the text, that will be evaluated at the time of compilation, and the output automatically inserted in the outputted text. 
+The output can be a `.PDF`, `.DOCX`, `.HTML` or others, thanks to the power of _Pandoc_.
+
+The start of a code chunk is indicated by three backticks and the end of a code chunk is indicated by three backticks.
+Here is an example.
+
+
+```{r, eval=FALSE, verbatim = TRUE}
+rnorm(10)
+```
+
+
+This chunk will compile to the following output (after setting `eval=FALSE` to `eval=TRUE`):
+```{r, eval=TRUE}
+rnorm(10)
+```
+
+
+Things to note:
+
+- The evaluated expression is added in a chunk of highlighted text, before the R output.
+- The output is prefixed with `##`.
+- The `eval=` argument is not required, since it is set to `eval=TRUE` by default. It does demonstrate how to set the options of the code chunk.
+
+
+In the same way, we may add a plot:
+```{r, eval=FALSE, verbatim = TRUE}
+plot(rnorm(10))
+```
+
+which compiles into
+```{r}
+plot(rnorm(10))
+```
+
+Some useful code chunk options include:
+
+- `eval=FALSE`: to return code only, without output.
+- `echo=FALSE`: to return output, without code.
+- `cache=`: to save results so that future compilations are faster.
+- `results='hide'`: to plot figures, without text output.
+- `collapse=TRUE`: if you want the whole output after the whole code, and not interleaved.
+- `warning=FALSE`: to supress watning. The same for `message=FALSE`, and `error=FALSE`.
+
+You can also call r expressions inline. 
+This is done with a single tick and the `r` argument.
+For instance:
+
+> `` `r '\x60r rnorm(1)\x60'` `` is a random Gaussian
+
+will output 
+
+> `r rnorm(1)` is a random Gaussian. 
+
+
+### BibTex
+
+BibTex is both a file format and a compiler. The bibtex compiler links documents to a reference database stored in the `.bib` file format. 
+
+Bibtex is typically associated with Tex and LaTex typesetting, but it also operates within the markdown pipeline. 
+
+Just store your references in a `.bib` file, add a `bibliography: yourFile.bib`  in the YML preamble of your Rmarkdown file, and call your references from the Rmarkdown text using `@referencekey`. 
+Rmarkdow will take care of creating the bibliography, and linking to it from the text.
+
+
+
+### Compiling
+Once you have your `.Rmd` file written in RMarkdown, __knitr__ will take care of the compilation for you. 
+You can call the `knitr::knitr` function directly from some `.R` file, or more conveniently, use the RStudio (0.96) Knit button above the text editing window.
+The location of the output file will be presented in the console.
+
+
+## bookdown
+As previously stated, __bookdown__ is an extension of __knitr__ intended for documents more complicated than simple reports-- such as books.
+Just like __knitr__, the writing is done in __RMarkdown__.
+Being an extension of __knitr__, __bookdown__ does allow some markdowns that are not supported by other compilers. 
+In particular, it has a more powerful cross referencing system. 
+
+
+
+
+
+## Shiny
+
+__Shiny__ [@shiny] is different than the previous systems, because it sets up an interactive web-site, and not a static file.
+The power of Shiny is that the layout of the web-site, and the settings of the web-server, is made with several simple R commands, with no need for web-programming.
+Once you have your app up and running, you can setup your own Shiny server on the web, or publish it via [Shinyapps.io](https://www.shinyapps.io/).
+The freemium versions of the service can deal with a small amount of traffic. If you expect a lot of traffic, you will probably need the paid versions.
+
+
+### Installation
+To setup your first Shiny app, you will need the __shiny__ package. 
+You will probably want RStudio, which facilitates the process.
+
+```{r, eval=FALSE}
+install.packages('shiny')
+```
+
+Once installed, you can run an example app to get the feel of it.
+
+```{r, eval=FALSE}
+library(shiny)
+runExample("01_hello")
+```
+
+Remember to press the __Stop__ button in RStudio to stop the web-server, and get back to RStudio.
+
+
+### The Basics of Shiny
+Every Shiny app has two main building blocks.
+
+1. A user interface, specified via the `ui.R` file in the app's directory.
+1. A server side, specified via the `server.R` file, in the app's directory.
+
+You can run the app via the __RunApp__ button in the RStudio interface, of by calling the app's directory with the `shinyApp` or `runApp` functions-- the former designed for single-app projects, and the latter, for multiple app projects. 
+
+```{r, eval=FALSE}
+shiny::runApp("my_app") # my_app is the app's directory.
+```
+
+The site's layout, is specified in the `ui.R` file using one of the _layout functions_.
+For instance, the function `sidebarLayout`, as the name suggest, will create a sidebar. 
+More layouts are detailed in the [layout guide](http://shiny.rstudio.com/articles/layout-guide.html).
+
+The active elements in the UI, that control your report, are known as _widgets_.
+Each widget will have a unique `inputId` so that it's values can be sent from the UI to the server. 
+More about widgets, in the [widget gallery](http://shiny.rstudio.com/gallery/widget-gallery.html).
+
+
+The `inputId` on the UI are mapped to `input` arguments on the server side. 
+The value of the `mytext` `inputId` can be queried by the server using `input$mytext`.
+These are called _reactive values_.
+The way the server "listens" to the UI, is governed by a set of functions that must wrap the `input` object. 
+These are the `observe`, `reactive`, and `reactive*` class of functions.
+
+With `observe` the server will get triggered when any of the reactive values change. 
+With `observeEvent` the server will only be triggered by specified reactive values. 
+Using `observe` is easier, and `observeEvent` is more prudent programming.
+
+A `reactive` function is a function that gets triggered when a reactive element changes.
+It is defined on the server side, and reside within an `observe` function.
+
+
+
+We now analyze the `1_Hello` app using these ideas.
+Here is the `ui.R` file.
+```{r, eval=FALSE}
+library(shiny)
+
+shinyUI(fluidPage(
+
+  titlePanel("Hello Shiny!"),
+
+  sidebarLayout(
+    sidebarPanel(
+      sliderInput(inputId = "bins",
+                  label = "Number of bins:", 
+                  min = 1,
+                  max = 50,
+                  value = 30)
+    ),
+
+    mainPanel(
+      plotOutput(outputId = "distPlot")
+    )
+  )
+))
+
+```
+
+Here is the `server.R` file:
+```{r, eval=FALSE}
+library(shiny)
+
+shinyServer(function(input, output) {
+
+  output$distPlot <- renderPlot({
+    x    <- faithful[, 2]  # Old Faithful Geyser data
+    bins <- seq(min(x), max(x), length.out = input$bins + 1)
+
+    hist(x, breaks = bins, col = 'darkgray', border = 'white')
+  })
+})
+```
+
+Things to note:
+
+- `ShinyUI` is a (deprecated) wrapper for the UI.
+- `fluidPage` ensures that the proportions of the elements adapt to the window side, thus, are fluid. 
+- The building blocks of the layout are a title, and the body. The title is governed by `titlePanel`, and the body is governed by `sidebarLayout`. The `sidebarLayout` includes  the `sidebarPanel` to control the sidebar, and the `mainPanel` for the main panel.
+- `sliderInput` calls a widget with a slider. Its `inputId` is `bins`, which is later used by the server within the `renderPlot` reactive function.
+- `plotOutput` specifies that the content of the `mainPanel` is a plot (`textOutput` for text). This expectation is satisfied on the server side with the `renderPlot` function (`renderText`).
+- `shinyServer` is a (deprecated) wrapper function for the server. 
+- The server runs a function with an `input` and an `output`. The elements of `input` are the `inputId`s from the UI. The elements of the `output` will be called by the UI using their `outputId`. 
+
+This is the output. 
+```{r, echo=FALSE}
+knitr::include_url('http://shiny.rstudio.com/gallery/example-01-hello.html')
+```
+
+
+
+
+Here is another example, taken from the RStudio [Shiny examples](https://github.com/rstudio/shiny-examples/tree/master/006-tabsets).
+
+`ui.R`:
+```{r, eval=FALSE}
+library(shiny)
+
+fluidPage(
+    
+  titlePanel("Tabsets"),
+  
+  sidebarLayout(
+    sidebarPanel(
+      radioButtons(inputId = "dist", 
+                   label = "Distribution type:",
+                   c("Normal" = "norm",
+                     "Uniform" = "unif",
+                     "Log-normal" = "lnorm",
+                     "Exponential" = "exp")),
+      br(), # add a break in the HTML page.
+      
+      sliderInput(inputId = "n", 
+                  label = "Number of observations:", 
+                   value = 500,
+                   min = 1, 
+                   max = 1000)
+    ),
+    
+    mainPanel(
+      tabsetPanel(type = "tabs", 
+        tabPanel(title = "Plot", plotOutput(outputId = "plot")), 
+        tabPanel(title = "Summary", verbatimTextOutput(outputId = "summary")), 
+        tabPanel(title = "Table", tableOutput(outputId = "table"))
+      )
+    )
+  )
+)
+```
+
+`server.R`:
+```{r, eval=FALSE}
+library(shiny)
+
+# Define server logic for random distribution application
+function(input, output) {
+  
+  data <- reactive({
+    dist <- switch(input$dist,
+                   norm = rnorm,
+                   unif = runif,
+                   lnorm = rlnorm,
+                   exp = rexp,
+                   rnorm)
+    
+    dist(input$n)
+  })
+  
+  output$plot <- renderPlot({
+    dist <- input$dist
+    n <- input$n
+    
+    hist(data(), main=paste('r', dist, '(', n, ')', sep=''))
+  })
+  
+  output$summary <- renderPrint({
+    summary(data())
+  })
+  
+  output$table <- renderTable({
+    data.frame(x=data())
+  })
+  
+}
+```
+
+Things to note:
+
+- We reused the `sidebarLayout`. 
+- As the name suggests, `radioButtons` is a widget that produces radio buttons, above the `sliderInput` widget. Note the different `inputId`s.
+- Different widgets are separated in `sidebarPanel` by commas. 
+- `br()` produces extra vertical spacing (break). 
+- `tabsetPanel` produces tabs in the main output panel. `tabPanel` governs the content of each panel. Notice the use of various output functions (`plotOutput`,`verbatimTextOutput`, `tableOutput`)  with corresponding `outputId`s. 
+- In `server.R` we see the usual `function(input,output)`.
+- The `reactive` function tells the server the trigger the function whenever `input` changes.
+- The `output` object is constructed outside the `reactive` function. See how the elements of `output` correspond to the `outputId`s in the UI.
+
+
+This is the output:
+```{r, echo=FALSE, cache=TRUE}
+knitr::include_url('https://shiny.rstudio.com/gallery/tabsets.html')
+```
+
+
+### Beyond the Basics
+
+Now that we have seen the basics, we may consider extensions to the basic report. 
+
+#### Widgets
+
+- `actionButton`	Action Button.
+- `checkboxGroupInput`	A group of check boxes.
+- `checkboxInput`	A single check box.
+- `dateInput`	A calendar to aid date selection.
+- `dateRangeInput`	A pair of calendars for selecting a date range.
+- `fileInput`	A file upload control wizard.
+- `helpText`	Help text that can be added to an input form.
+- `numericInput`	A field to enter numbers.
+- `radioButtons`	A set of radio buttons.
+- `selectInput`	A box with choices to select from.
+- `sliderInput`	A slider bar.
+- `submitButton`	A submit button.
+- `textInput`	A field to enter text.
+
+See examples [here](https://shiny.rstudio.com/gallery/widget-gallery.html).
+
+```{r, echo=FALSE, cache=TRUE}
+knitr::include_url('https://shiny.rstudio.com/gallery/widget-gallery.html')
+```
+
+
+#### Output Elements
+
+The `ui.R` output types. 
+
+- `htmlOutput`	raw HTML.
+- `imageOutput`	image.
+- `plotOutput`	plot.
+- `tableOutput`	table.
+- `textOutput`	text.
+- `uiOutput`	raw HTML.
+- `verbatimTextOutput`	text.
+
+The corresponding `server.R` renderers.
+
+- `renderImage`	images (saved as a link to a source file).
+- `renderPlot`	plots.
+- `renderPrint`	any printed output.
+- `renderTable`	data frame, matrix, other table like structures.
+- `renderText`	character strings.
+- `renderUI`	a Shiny tag object or HTML.
+
+
+Your Shiny app can use any R object. 
+The things to remember:
+
+- The working directory of the app is the location of `server.R`.
+- The code before `shinyServer` is run only once. 
+- The code inside ``shinyServer` is run whenever a reactive is triggered, and may thus slow things.
+
+
+To keep learning, see the RStudio's [tutorial](http://shiny.rstudio.com/tutorial/), and the Biblipgraphic notes herein.
+
+
+### shinydashboard
+A template for Shiny to give it s modern look.
+
+
+
+## flexdashboard
+If you want to quickly write an interactive dashboard, which is simple enough to be a static HTML file and does not need an HTML server, then Shiny may be an overkill. 
+With __flexdashboard__ you can write your dashboard a single .Rmd file, which will generate an interactive dashboard as a static HTML file. 
+
+See [http://rmarkdown.rstudio.com/flexdashboard/] for more info.
+
+
+## Bibliographic Notes
+
+For RMarkdown see [here](http://rmarkdown.rstudio.com/).
+For everything on __knitr__ see [Yihui's blog](https://yihui.name/knitr/), or the book @xie2015dynamic.
+For a __bookdown__ manual, see @xie2016bookdown.
+For a Shiny manual, see @shiny, the [RStudio tutorial](http://shiny.rstudio.com/tutorial/), or [Zev Ross's](http://zevross.com/blog/2016/04/19/r-powered-web-applications-with-shiny-a-tutorial-and-cheat-sheet-with-40-example-apps/) excellent guide.
+Video tutorials are available [here](https://www.rstudio.com/resources/webinars/shiny-developer-conference/).
+
+
+
+
+## Practice Yourself
+
+1. Generate a report using __knitr__ with your name as title, and a scatter plot of two random variables in the body. Save it as PDF, DOCX, and HTML.
+
+1. Recall that this book is written in __bookdown__, which is a superset of __knitr__. Go to the source .Rmd file of the first chapter, and parse it in your head:
+(https://raw.githubusercontent.com/johnros/Rcourse/master/02-r-basics.Rmd)
